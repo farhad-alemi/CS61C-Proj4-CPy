@@ -351,6 +351,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         matrix *result00, *result01, *result10, *result11;
 
         half_dimension = mat1->cols / 2;
+        err_code = 0;
 
         err_code = err_code | allocator(&a, half_dimension, half_dimension, mat1, 0, 0, 1);
         err_code = err_code | allocator(&b, half_dimension, half_dimension, mat1, 0, half_dimension, 1);
