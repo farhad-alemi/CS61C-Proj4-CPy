@@ -122,6 +122,10 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
  */
 int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int cols) {
     /* YOUR CODE HERE */
+    if (cols <= 0 || rows <= 0) {
+        return VALUE_ERROR;
+    }
+
     return allocator(mat, rows, cols, from, offset / from->cols, offset % from->cols, 1);
 }
 
