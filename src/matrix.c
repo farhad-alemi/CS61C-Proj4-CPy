@@ -51,15 +51,13 @@ void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
 
 /* A helper method which allocates matrices and data rows if the matrix is
  not a slice. */
-int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, int col_offset,
-              int isSlice) {
+int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, int col_offset, int isSlice) {
     if (cols <= 0 || rows <= 0) {
         return VALUE_ERROR;
     } else if (isSlice) {
         if (from == NULL) {
             return RUNTIME_ERROR;
-        } else if (row_offset < 0 || col_offset < 0 || row_offset + rows > from->rows ||
-                   col_offset + cols > from->cols) {
+        } else if (row_offset < 0 || col_offset < 0 || row_offset + rows > from->rows || col_offset + cols > from->cols) {
             return VALUE_ERROR;
         }
     }
@@ -222,9 +220,8 @@ void fill_matrix(matrix *mat, double val) {
 int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     double first_val;
 
-    if (result == NULL || mat1 == NULL || mat2 == NULL || result->data == NULL ||
-        mat1->data == NULL || mat2->data == NULL || mat1->rows != result->rows ||
-        mat1->cols != result->cols) {
+    if (result == NULL || mat1 == NULL || mat2 == NULL || result->data == NULL || mat1->data == NULL || mat2->data == NULL ||
+        mat1->rows != result->rows || mat1->cols != result->cols) {
         return RUNTIME_ERROR;
     } else if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
         return VALUE_ERROR;
@@ -307,17 +304,16 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code;
+    int err_code 0;
 
-    if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL ||
-        mat2 == NULL || mat2->data == NULL || result->rows != mat1->rows ||
-        result->cols != mat2->cols) {
+    if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
+        result->rows != mat1->rows || result->cols != mat2->cols) {
         return RUNTIME_ERROR;
     } else if (mat1->cols != mat2->rows) {
         return VALUE_ERROR;
     }
 
-    if (mat1->cols <= DIMENSION_THRESHOLD) {
+    if (mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat2->cols || mat1->rows % 2 != 0) {
         matrix *mat2_T;
 
         /* Allocating Transpose. */
@@ -343,17 +339,137 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         }
         deallocate_matrix(mat2_T);
     } else {
+        /* Strassen's Algorithm */
         int half_dimension;
-        matrix *mat1_00, *mat1_0m, *mat1_m0, *mat1_mm;
-        matrix *mat2_00, *mat2_0m, *mat2_m0, *mat2_mm;
-        matrix *result_00, *result_01, *result_10, *result_11;
-        matrix *temp1, *temp2, *temp3, *temp4, *temp5, *temp6, *temp7, *temp8;
+        matrix *a, *b, *c, *d;
+        matrix *e, *f, *g, *h;
+        matrix *fNh, *aPb, *cPd, *gNe, *aPd, *ePh, *bNd, *gPh, *aNc, *ePf;
+        matrix *p1, *p2, *p3, *p4, *p5, *p6, *p7;
+        matrix *result00, *result01, *result10, *result11;
 
         half_dimension = mat1->cols / 2;
 
-        allocate_matrix_ref(&mat1_00, mat1, 0, half_dimension, half_dimension);
+        err_code = err_code | allocator(&a, half_dimension, half_dimension, mat1, 0, 0, 1);
+        err_code = err_code | allocator(&b, half_dimension, half_dimension, mat1, 0, half_dimension, 1);
+        err_code = err_code | allocator(&c, half_dimension, half_dimension, mat1, half_dimension, 0, 1);
+        err_code = err_code | allocator(&d, half_dimension, half_dimension, mat1, half_dimension, half_dimension, 1);
 
-        // free todo
+        err_code = err_code | allocator(&e, half_dimension, half_dimension, mat2, 0, 0, 1);
+        err_code = err_code | allocator(&f, half_dimension, half_dimension, mat2, 0, half_dimension, 1);
+        err_code = err_code | allocator(&g, half_dimension, half_dimension, mat2, half_dimension, 0, 1);
+        err_code = err_code | allocator(&h, half_dimension, half_dimension, mat2, half_dimension, half_dimension, 1);
+
+        err_code = err_code | allocate_matrix(&fNh, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&aPb, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&cPd, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&gNe, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&aPd, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&ePh, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&bNd, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&gPh, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&aNc, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&ePf, half_dimension, half_dimension);
+
+        err_code = err_code | allocate_matrix(&p1, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&p2, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&p3, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&p4, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&p5, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&p6, half_dimension, half_dimension);
+        err_code = err_code | allocate_matrix(&p7, half_dimension, half_dimension);
+
+        err_code = err_code | allocator(&result00, half_dimension, half_dimension, result, 0, 0, 1);
+        err_code = err_code | allocator(&result01, half_dimension, half_dimension, result, 0, half_dimension, 1);
+        err_code = err_code | allocator(&result10, half_dimension, half_dimension, result, half_dimension, 0, 1);
+        err_code = err_code | allocator(&result11, half_dimension, half_dimension, result, half_dimension, half_dimension, 1);
+
+        if (err_code) {
+            return err_code;
+        }
+
+        err_code = err_code | sub_matrix(fNh, f, h);
+        err_code = err_code | add_matrix(aPb, a, b);
+        err_code = err_code | add_matrix(cPd, c, d);
+        err_code = err_code | sub_matrix(gNe, g, e);
+        err_code = err_code | add_matrix(aPd, a, d);
+        err_code = err_code | add_matrix(ePh, f, h);
+        err_code = err_code | sub_matrix(bNd, b, d);
+        err_code = err_code | add_matrix(gPh, g, h);
+        err_code = err_code | sub_matrix(aNc, a, c);
+        err_code = err_code | add_matrix(ePf, e, f);
+
+        if (err_code) {
+            return err_code;
+        }
+
+        err_code = err_code | mul_matrix(p1, a, fNh);
+        err_code = err_code | mul_matrix(p2, aPb, h);
+        err_code = err_code | mul_matrix(p3, cPd, e);
+        err_code = err_code | mul_matrix(p4, d, gNe);
+        err_code = err_code | mul_matrix(p5, aPd, ePh);
+        err_code = err_code | mul_matrix(p6, bNd, gPh);
+        err_code = err_code | mul_matrix(p7, aNc, ePf);
+
+        if (err_code) {
+            return err_code;
+        }
+
+        err_code = err_code | add_matrix(result00, p5, p4);
+        err_code = err_code | sub_matrix(result00, result00, p2);
+        err_code = err_code | add_matrix(result00, result00, p6);
+
+        if (err_code) {
+            return err_code;
+        }
+
+        err_code = err_code | add_matrix(result01, p1, p2);
+        err_code = err_code | add_matrix(result10, p3, p4);
+
+        if (err_code) {
+            return err_code;
+        }
+
+        err_code = err_code | add_matrix(result11, p1, p5);
+        err_code = err_code | sub_matrix(result11, result11, p3);
+        err_code = err_code | sub_matrix(result11, result11, p7);
+
+        if (err_code) {
+            return err_code;
+        }
+
+        deallocate_matrix(a);
+        deallocate_matrix(b);
+        deallocate_matrix(c);
+        deallocate_matrix(d);
+
+        deallocate_matrix(e);
+        deallocate_matrix(f);
+        deallocate_matrix(g);
+        deallocate_matrix(h);
+
+        deallocate_matrix(fNh);
+        deallocate_matrix(aPb);
+        deallocate_matrix(cPd);
+        deallocate_matrix(gNe);
+        deallocate_matrix(aPd);
+        deallocate_matrix(ePh);
+        deallocate_matrix(bNd);
+        deallocate_matrix(gPh);
+        deallocate_matrix(aNc);
+        deallocate_matrix(ePf);
+
+        deallocate_matrix(p1);
+        deallocate_matrix(p2);
+        deallocate_matrix(p3);
+        deallocate_matrix(p4);
+        deallocate_matrix(p5);
+        deallocate_matrix(p6);
+        deallocate_matrix(p7);
+
+        deallocate_matrix(result00);
+        deallocate_matrix(result01);
+        deallocate_matrix(result10);
+        deallocate_matrix(result11);
     }
 
     return 0;
