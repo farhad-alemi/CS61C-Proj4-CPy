@@ -161,12 +161,12 @@ double *get_addr(matrix *mat, int row, int col) {
     int stride;
 
     if (mat == NULL || mat->data == NULL) {
-        return RUNTIME_ERROR;
+        return (double *)RUNTIME_ERROR;
     } else if (row < 0 || row >= mat->rows || col < 0 || col >= mat->cols) {
-        return VALUE_ERROR;
+        return (double *)VALUE_ERROR;
     }
 
-    stride = (mat->parent == NULL) ? mat->cols : parent->cols;
+    stride = (mat->parent == NULL) ? mat->cols : mat->parent->cols;
 
     return mat->data + (stride * row) + col;
 }
@@ -179,8 +179,8 @@ double get(matrix *mat, int row, int col) {
     /* YOUR CODE HERE */
     double *ret_val = get_addr(mat, row, col);
 
-    if (ret_val == RUNTIME_ERROR || ret_val == VALUE_ERROR) {
-        return ret_val;
+    if (ret_val == (double *)RUNTIME_ERROR || ret_val == (double *)VALUE_ERROR) {
+        return (double)ret_val;
     }
 
     return *ret_val;
@@ -194,8 +194,8 @@ void set(matrix *mat, int row, int col, double val) {
     /* YOUR CODE HERE */
     double *ret_val = get_addr(mat, row, col);
 
-    if (ret_val == RUNTIME_ERROR || ret_val == VALUE_ERROR) {
-        exit(ret_val);
+    if (ret_val == (double *)RUNTIME_ERROR || ret_val == (double *)VALUE_ERROR) {
+        exit((int)ret_val);
     }
 
     *ret_val = val;
@@ -258,6 +258,8 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     }
+
+    return 0;
 }
 
 /*
@@ -304,7 +306,7 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code 0;
+    int err_code;
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
         result->rows != mat1->rows || result->cols != mat2->cols) {
@@ -333,7 +335,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
             for (int rc = 0; rc < result->cols; ++rc) {
                 set(result, rr, rc, 0);
                 for (int mc = 0; mc < mat1->cols; ++mc) {
-                    set(result, i, j, get(result, i, j) + (get(mat1, i, k) * get(mat2_T, j, k)));
+                    set(result, rr, rc, get(result, rr, rc) + (get(mat1, rr, mc) * get(mat2_T, rc, mc)));
                 }
             }
         }
@@ -482,4 +484,5 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * multiplication.
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) { /* YOUR CODE HERE */
+    return -1000;
 }
