@@ -13,6 +13,7 @@
 #include <x86intrin.h>
 #endif
 
+#define DARK_ERROR -3
 #define RUNTIME_ERROR -2
 #define VALUE_ERROR -1
 #define INITIAL_VALUE 0.0
@@ -180,7 +181,7 @@ double get(matrix *mat, int row, int col) {
     double *ret_val = get_addr(mat, row, col);
 
     if (ret_val == (double *)RUNTIME_ERROR || ret_val == (double *)VALUE_ERROR) {
-        return (double)ret_val;
+        exit(DARK_ERROR);
     }
 
     return *ret_val;
@@ -195,7 +196,7 @@ void set(matrix *mat, int row, int col, double val) {
     double *ret_val = get_addr(mat, row, col);
 
     if (ret_val == (double *)RUNTIME_ERROR || ret_val == (double *)VALUE_ERROR) {
-        exit((int)ret_val);
+        exit(DARK_ERROR);
     }
 
     *ret_val = val;
