@@ -115,6 +115,7 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
  * success.
  */
 int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int cols) {
+    // allocate_matrix_ref(&new_mat, self->mat, index * self->mat->cols, self->mat->cols, 1);
     /* YOUR CODE HERE */
     if (cols <= 0 || rows <= 0) {
         return VALUE_ERROR;
