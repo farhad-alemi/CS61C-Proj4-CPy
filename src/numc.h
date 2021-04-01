@@ -7,8 +7,7 @@
  * is of type PyObject
  */
 typedef struct {
-    PyObject_HEAD
-    matrix* mat;
+    PyObject_HEAD matrix *mat;
     PyObject *shape;
 } Matrix61c;
 
@@ -22,12 +21,11 @@ static PyObject *Matrix61c_new(PyTypeObject *type, PyObject *args, PyObject *kwd
 static int Matrix61c_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyObject *Matrix61c_to_list(Matrix61c *self);
 static PyObject *Matrix61c_repr(PyObject *self);
-static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args);
-static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args);
-static PyObject *Matrix61c_add(Matrix61c* self, PyObject* args);
-static PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args);
-static PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args);
-static PyObject *Matrix61c_neg(Matrix61c* self);
+static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args);
+static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args);
+static PyObject *Matrix61c_add(Matrix61c *self, PyObject *args);
+static PyObject *Matrix61c_sub(Matrix61c *self, PyObject *args);
+static PyObject *Matrix61c_multiply(Matrix61c *self, PyObject *args);
+static PyObject *Matrix61c_neg(Matrix61c *self);
 static PyObject *Matrix61c_abs(Matrix61c *self);
 static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional);
-

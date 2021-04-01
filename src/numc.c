@@ -1,4 +1,5 @@
 #include "numc.h"
+
 #include <structmember.h>
 
 static PyTypeObject Matrix61cType;
@@ -8,8 +9,7 @@ static PyTypeObject Matrix61cType;
 static int init_rand(PyObject *self, int rows, int cols, unsigned int seed, double low, double high) {
     matrix *new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
-    if (alloc_failed)
-        return alloc_failed;
+    if (alloc_failed) return alloc_failed;
     rand_matrix(new_mat, seed, low, high);
     ((Matrix61c *)self)->mat = new_mat;
     ((Matrix61c *)self)->shape = PyTuple_Pack(2, PyLong_FromLong(rows), PyLong_FromLong(cols));
@@ -38,8 +38,7 @@ static int init_1d(PyObject *self, int rows, int cols, PyObject *lst) {
     }
     matrix *new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
-    if (alloc_failed)
-        return alloc_failed;
+    if (alloc_failed) return alloc_failed;
     int count = 0;
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
@@ -74,8 +73,7 @@ static int init_2d(PyObject *self, PyObject *lst) {
     }
     matrix *new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
-    if (alloc_failed)
-        return alloc_failed;
+    if (alloc_failed) return alloc_failed;
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             set(new_mat, i, j, PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(lst, i), j)));
@@ -171,8 +169,7 @@ static int Matrix61c_init(PyObject *self, PyObject *args, PyObject *kwds) {
         if (arg1 && arg2 && arg3 && PyLong_Check(arg1) && PyLong_Check(arg2) && (PyLong_Check(arg3) || PyFloat_Check(arg3))) {
             if (PyLong_Check(arg3)) {
                 return init_fill(self, PyLong_AsLong(arg1), PyLong_AsLong(arg2), PyLong_AsLong(arg3));
-            }
-            else
+            } else
                 return init_fill(self, PyLong_AsLong(arg1), PyLong_AsLong(arg2), PyFloat_AsDouble(arg3));
         } else if (arg1 && arg2 && arg3 && PyLong_Check(arg1) && PyLong_Check(arg2) && PyList_Check(arg3)) {
             /* Matrix(rows, cols, 1D list) */
@@ -215,7 +212,7 @@ static PyObject *Matrix61c_class_to_list(Matrix61c *self, PyObject *args) {
             PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
             return NULL;
         }
-        Matrix61c* mat61c = (Matrix61c*)mat;
+        Matrix61c *mat61c = (Matrix61c *)mat;
         return Matrix61c_to_list(mat61c);
     } else {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments");
@@ -226,8 +223,7 @@ static PyObject *Matrix61c_class_to_list(Matrix61c *self, PyObject *args) {
 /* Add class methods */
 static PyMethodDef Matrix61c_class_methods[] = {
     {"to_list", (PyCFunction)Matrix61c_class_to_list, METH_VARARGS, "Returns a list representation of numc.Matrix"},
-    {NULL, NULL, 0, NULL}
-};
+    {NULL, NULL, 0, NULL}};
 
 /* Matrix61c string representation. For printing purposes. */
 static PyObject *Matrix61c_repr(PyObject *self) {
@@ -236,7 +232,7 @@ static PyObject *Matrix61c_repr(PyObject *self) {
 }
 
 /* For __getitem__. (e.g. mat[0]) */
-static PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
+static PyObject *Matrix61c_subscript(Matrix61c *self, PyObject *key) {
     if (!PyLong_Check(key)) {
         PyErr_SetString(PyExc_TypeError, "Key is not valid");
         return NULL;
@@ -246,7 +242,7 @@ static PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
-    if (self->mat->cols == 1) { // if one single number, unwrap from list
+    if (self->mat->cols == 1) {  // if one single number, unwrap from list
         return PyFloat_FromDouble(get(self->mat, index, 0));
     }
     matrix *new_mat;
@@ -255,14 +251,14 @@ static PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to allocate slice");
         return NULL;
     }
-    Matrix61c* rv = (Matrix61c*) Matrix61c_new(&Matrix61cType, NULL, NULL);
+    Matrix61c *rv = (Matrix61c *)Matrix61c_new(&Matrix61cType, NULL, NULL);
     rv->mat = new_mat;
     rv->shape = PyTuple_Pack(2, PyLong_FromLong(new_mat->rows), PyLong_FromLong(1));
-    return (PyObject*)rv;
+    return (PyObject *)rv;
 }
 
 /* For __setitem__ (e.g. mat[0] = 1) */
-static int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) {
+static int Matrix61c_set_subscript(Matrix61c *self, PyObject *key, PyObject *v) {
     if (!PyLong_Check(key)) {
         PyErr_SetString(PyExc_TypeError, "Key is not valid");
         return -1;
@@ -300,8 +296,8 @@ static int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) 
 
 static PyMappingMethods Matrix61c_mapping = {
     NULL,
-    (binaryfunc) Matrix61c_subscript,
-    (objobjargproc) Matrix61c_set_subscript,
+    (binaryfunc)Matrix61c_subscript,
+    (objobjargproc)Matrix61c_set_subscript,
 };
 
 /* NUMBER METHODS */
@@ -310,45 +306,39 @@ static PyMappingMethods Matrix61c_mapping = {
  * Add the second numc.Matrix (Matrix61c) object to the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-static PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_add(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
 }
 
 /*
  * Substract the second numc.Matrix (Matrix61c) object from the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-static PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_sub(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
 }
 
 /*
  * NOT element-wise multiplication. The first operand is self, and the second operand
  * can be obtained by casting `args`.
  */
-static PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_multiply(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
 }
 
 /*
  * Negates the given numc.Matrix.
  */
-static PyObject *Matrix61c_neg(Matrix61c* self) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_neg(Matrix61c *self) { /* TODO: YOUR CODE HERE */
 }
 
 /*
  * Take the element-wise absolute value of this numc.Matrix.
  */
-static PyObject *Matrix61c_abs(Matrix61c *self) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_abs(Matrix61c *self) { /* TODO: YOUR CODE HERE */
 }
 
 /*
  * Raise numc.Matrix (Matrix61c) to the `pow`th power. You can ignore the argument `optional`.
  */
-static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) { /* TODO: YOUR CODE HERE */
 }
 
 /*
@@ -359,14 +349,12 @@ static PyNumberMethods Matrix61c_as_number = {
     /* TODO: YOUR CODE HERE */
 };
 
-
 /* INSTANCE METHODS */
 /*
  * Given a numc.Matrix self, parse `args` to (int) row, (int) col, and (double/int) val.
  * This function should return None in Python.
  */
-static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
 }
 
 /*
@@ -374,8 +362,7 @@ static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
  * This function should return the value at the `row`th row and `col`th column, which is a Python
  * float.
  */
-static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
-    /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
 }
 
 /*
@@ -386,52 +373,36 @@ static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
  */
 static PyMethodDef Matrix61c_methods[] = {
     /* TODO: YOUR CODE HERE */
-    {NULL, NULL, 0, NULL}
-};
+    {NULL, NULL, 0, NULL}};
 
 /* INSTANCE ATTRIBUTES*/
 static PyMemberDef Matrix61c_members[] = {
-    {"shape", T_OBJECT_EX, offsetof(Matrix61c, shape), 0,
-     "(rows, cols)"},
-    {NULL}  /* Sentinel */
+    {"shape", T_OBJECT_EX, offsetof(Matrix61c, shape), 0, "(rows, cols)"}, {NULL} /* Sentinel */
 };
 
-static PyTypeObject Matrix61cType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "numc.Matrix",
-    .tp_basicsize = sizeof(Matrix61c),
-    .tp_dealloc = (destructor)Matrix61c_dealloc,
-    .tp_repr = (reprfunc)Matrix61c_repr,
-    .tp_as_number = &Matrix61c_as_number,
-    .tp_flags = Py_TPFLAGS_DEFAULT |
-        Py_TPFLAGS_BASETYPE,
-    .tp_doc = "numc.Matrix objects",
-    .tp_methods = Matrix61c_methods,
-    .tp_members = Matrix61c_members,
-    .tp_as_mapping = &Matrix61c_mapping,
-    .tp_init = (initproc)Matrix61c_init,
-    .tp_new = Matrix61c_new
-};
+static PyTypeObject Matrix61cType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name = "numc.Matrix",
+                                     .tp_basicsize = sizeof(Matrix61c),
+                                     .tp_dealloc = (destructor)Matrix61c_dealloc,
+                                     .tp_repr = (reprfunc)Matrix61c_repr,
+                                     .tp_as_number = &Matrix61c_as_number,
+                                     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                     .tp_doc = "numc.Matrix objects",
+                                     .tp_methods = Matrix61c_methods,
+                                     .tp_members = Matrix61c_members,
+                                     .tp_as_mapping = &Matrix61c_mapping,
+                                     .tp_init = (initproc)Matrix61c_init,
+                                     .tp_new = Matrix61c_new};
 
-
-static struct PyModuleDef numcmodule = {
-    PyModuleDef_HEAD_INIT,
-    "numc",
-    "Numc matrix operations",
-    -1,
-    Matrix61c_class_methods
-};
+static struct PyModuleDef numcmodule = {PyModuleDef_HEAD_INIT, "numc", "Numc matrix operations", -1, Matrix61c_class_methods};
 
 /* Initialize the numc module */
 PyMODINIT_FUNC PyInit_numc(void) {
-    PyObject* m;
+    PyObject *m;
 
-    if (PyType_Ready(&Matrix61cType) < 0)
-        return NULL;
+    if (PyType_Ready(&Matrix61cType) < 0) return NULL;
 
     m = PyModule_Create(&numcmodule);
-    if (m == NULL)
-        return NULL;
+    if (m == NULL) return NULL;
 
     Py_INCREF(&Matrix61cType);
     PyModule_AddObject(m, "Matrix", (PyObject *)&Matrix61cType);
