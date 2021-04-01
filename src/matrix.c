@@ -517,7 +517,7 @@ int calculate_largest_pow2(int number) {
 int calculate_pow2_matrices(matrix *mat, matrix ***pow_2_matrices, int largest_pow) {
     int err_code;
 
-    if (largest_pow2 <= 1) {
+    if (largest_pow <= 1) {
         return VALUE_ERROR;
     }
 
@@ -529,7 +529,7 @@ int calculate_pow2_matrices(matrix *mat, matrix ***pow_2_matrices, int largest_p
     (*pow_2_matrices)[0] = mat;
 
     for (int i = 1; i <= largest_pow; ++i) {
-        err_code = allocate_matrix((*pow_2_matrices + i), mat->rows; mat->cols);
+        err_code = allocate_matrix((*pow_2_matrices + i), mat->rows, mat->cols);
         if (err_code) {
             return err_code;
         }
@@ -570,7 +570,7 @@ int deallocate_pow2_matrices(matrix **matrices, int len) {
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* YOUR CODE HERE */
     int err_code, largest_pow_2, remaining_power, curr_power;
-    matrix **pow_2_matrices, *temp_matrix;
+    matrix **pow_2_matrices, *temp_matrix = NULL;
 
     if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
         mat->cols != result->cols) {
@@ -603,18 +603,16 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         remaining_power = pow - (1U << (size_t)largest_pow_2);
         if (remaining_power > 0) {
             allocate_matrix(&temp_matrix, mat->rows, mat->cols);
-        } else {
-            temp_matrix == NULL;
         }
 
         while (remaining_power > 0) {
             curr_power = calculate_largest_pow2(remaining_power);
-            err_code = mul_matrix(temp, result, pow_2_matrices[curr_power]);
+            err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
             if (err_code) {
                 return err_code;
             }
 
-            err_code = mat_operator(result, temp, temp, '=');
+            err_code = mat_operator(result, temp_matrix, temp_matrix, '=');
             if (err_code) {
                 return err_code;
             }
