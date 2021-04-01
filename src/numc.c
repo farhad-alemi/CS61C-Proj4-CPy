@@ -418,7 +418,7 @@ static PyObject *Matrix61c_multiply(Matrix61c *self, PyObject *args) {
  */
 static PyObject *Matrix61c_neg(Matrix61c *self) {
     /* YOUR CODE HERE */
-    return operator(self, self, '~');
+    return operator(self, (PyObject *)self, '~');
 }
 
 /*
@@ -426,7 +426,7 @@ static PyObject *Matrix61c_neg(Matrix61c *self) {
  */
 static PyObject *Matrix61c_abs(Matrix61c *self) {
     /* YOUR CODE HERE */
-    return operator(self, self, '|');
+    return operator(self, (PyObject *)self, '|');
 }
 
 /*
@@ -453,7 +453,7 @@ static PyNumberMethods Matrix61c_as_number = {
 /*
  * Checks the error for get or set functions.
  */
-PyObject *getset_err_check(Matrix61c *self, PyObject *args, int cond) {
+PyObject *getset_err_check(Matrix61c *self, PyObject *args, int row, int col, int cond) {
     if (PyTuple_Check(args) == 0 || !cond) {
         PyErr_SetString(PyExc_TypeError, "Invalid Arguments");
         return NULL;
@@ -461,6 +461,8 @@ PyObject *getset_err_check(Matrix61c *self, PyObject *args, int cond) {
         PyErr_SetString(PyExc_IndexError, "Row or Column Index Out-of-Range");
         return NULL;
     }
+
+    return Py_None;
 }
 
 /*
@@ -469,10 +471,11 @@ PyObject *getset_err_check(Matrix61c *self, PyObject *args, int cond) {
  */
 static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args) {
     /* YOUR CODE HERE */
-    int row, col;
+    int row, col, cond;
     double val;
 
-    if (getset_err_check(self, args, PyArg_ParseTuple(args, "iid", &row, &col, &val)) {
+    cond = PyArg_ParseTuple(args, "iid", &row, &col, &val);
+    if (getset_err_check(self, args, row, col, cond) == NULL) {
         return NULL;
     }
 
@@ -487,9 +490,10 @@ static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args) {
  */
 static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args) {
     /* YOUR CODE HERE */
-    int row, col;
+    int row, col, cond;
 
-    if (getset_err_check(self, args, PyArg_ParseTuple(args, "ii", &row, &col)) {
+    cond = PyArg_ParseTuple(args, "ii", &row, &col);
+    if (getset_err_check(self, args, row, col cond) == NULL) {
         return NULL;
     }
 
