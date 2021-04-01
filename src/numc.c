@@ -493,7 +493,7 @@ static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args) {
     int row, col, cond;
 
     cond = PyArg_ParseTuple(args, "ii", &row, &col);
-    if (getset_err_check(self, args, row, col cond) == NULL) {
+    if (getset_err_check(self, args, row, col, cond) == NULL) {
         return NULL;
     }
 
