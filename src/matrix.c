@@ -517,7 +517,7 @@ int calculate_largest_pow2(int number) {
 int calculate_pow2_matrices(matrix *mat, matrix ***pow_2_matrices, int largest_pow) {
     int err_code;
 
-    if (largest_pow <= 1) {
+    if (largest_pow < 1) {
         return VALUE_ERROR;
     }
 
