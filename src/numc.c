@@ -319,6 +319,26 @@ PyObject *err_check(int signal) {
 }
 
 /*
+ * Return a tuple given rows and cols
+ */
+PyObject *get_shape(int rows, int cols) {
+    if (rows == 1 || cols == 1) {
+        return PyTuple_Pack(1, PyLong_FromLong(rows * cols));
+    } else {
+        return PyTuple_Pack(2, PyLong_FromLong(rows), PyLong_FromLong(cols));
+    }
+}
+
+/* Helper method which creates a Matrix61c struct. */
+Matrix61c *gen_Matrix61c(matrix *result_matrix) {
+    Matrix61c *result_struct = (Matrix61c *)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    result_struct->mat = result_matrix;
+    result_struct->shape = get_shape(result_struct->mat->rows, result_struct->mat->cols);
+
+    return result_struct;
+}
+
+/*
  * Helper method which performs the OPERATION operation.
  */
 PyObject *operator(Matrix61c *self, PyObject *args, char operation) {
@@ -338,7 +358,7 @@ PyObject *operator(Matrix61c *self, PyObject *args, char operation) {
 
     switch (operation) {
         case '+':
-            err_code = add_matrix(result, self->mat, ((Matrix61c *)args)->mat);
+            err_code = add_matrix(result_mat, self->mat, ((Matrix61c *)args)->mat);
             break;
         case '-':
             err_code = sub_matrix(result_mat, self->mat, ((Matrix61c *)args)->mat);
@@ -363,7 +383,7 @@ PyObject *operator(Matrix61c *self, PyObject *args, char operation) {
         return NULL;
     }
 
-    return (PyObject *)gen_Matrix61c(result_matrix);
+    return (PyObject *)gen_Matrix61c(result_mat);
 }
 
 /*
@@ -398,7 +418,7 @@ static PyObject *Matrix61c_multiply(Matrix61c *self, PyObject *args) {
  */
 static PyObject *Matrix61c_neg(Matrix61c *self) {
     /* YOUR CODE HERE */
-    return operator(self, args, '~');
+    return operator(self, self, '~');
 }
 
 /*
@@ -406,7 +426,7 @@ static PyObject *Matrix61c_neg(Matrix61c *self) {
  */
 static PyObject *Matrix61c_abs(Matrix61c *self) {
     /* YOUR CODE HERE */
-    return operator(self, args, '|');
+    return operator(self, self, '|');
 }
 
 /*
@@ -414,7 +434,7 @@ static PyObject *Matrix61c_abs(Matrix61c *self) {
  */
 static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
     /* YOUR CODE HERE */
-    return operator(self, args, '^');
+    return operator(self, pow, '^');
 }
 
 /*
