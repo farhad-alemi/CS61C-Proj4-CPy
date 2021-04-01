@@ -24,7 +24,7 @@ class TestAdd(TestCase):
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(2001, 47, seed=1)
         is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
         self.assertTrue(is_correct)
-        print_speedup(speed_up
+        print_speedup(speed_up)
 
     def test_large_add(self):
         # YOUR CODE HERE
