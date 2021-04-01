@@ -143,7 +143,7 @@ static int Matrix61c_init(PyObject *self, PyObject *args, PyObject *kwds) {
             return -1;
         }
 
-        // Set seed if argument exists
+        /* Set seed if argument exists */
         if (seed) {
             if (PyLong_Check(seed)) {
                 unsigned_seed = PyLong_AsUnsignedLong(seed);
@@ -242,7 +242,8 @@ static PyObject *Matrix61c_subscript(Matrix61c *self, PyObject *key) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
-    if (self->mat->cols == 1) {  // if one single number, unwrap from list
+    /* if one single number, unwrap from list. */
+    if (self->mat->cols == 1) {
         return PyFloat_FromDouble(get(self->mat, index, 0));
     }
     matrix *new_mat;
@@ -303,42 +304,117 @@ static PyMappingMethods Matrix61c_mapping = {
 /* NUMBER METHODS */
 
 /*
+ *Checks value or runtime error.
+ */
+PyObject *err_check(int signal) {
+    if (signal == VALUE_ERROR) {
+        PyErr_SetString(PyExc_ValueError, "Value Error");
+        return NULL;
+    } else if (signal == RUNTIME_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError, "Runtime Error");
+        return NULL;
+    }
+
+    return Py_None;
+}
+
+/*
+ * Helper method which performs the OPERATION operation.
+ */
+PyObject *operator(Matrix61c *self, PyObject *args, char operation) {
+    int err_code;
+    matrix *result_mat;
+    if (args == NULL || (operation != '^' && PyObject_TypeCheck(args, &Matrix61cType) == 0) ||
+        (operation == '^' && PyLong_Check(args) == 0)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments");
+        return NULL;
+    }
+
+    err_code =
+        allocate_matrix(&result_mat, self->mat->rows, ((operation == '*') ? ((Matrix61c *)args)->mat->cols : self->mat->cols));
+    if (err_check(err_code) == NULL) {
+        return NULL;
+    }
+
+    switch (operation) {
+        case '+':
+            err_code = add_matrix(result, self->mat, ((Matrix61c *)args)->mat);
+            break;
+        case '-':
+            err_code = sub_matrix(result_mat, self->mat, ((Matrix61c *)args)->mat);
+            break;
+        case '~':
+            err_code = neg_matrix(result_mat, self->mat);
+            break;
+        case '|':
+            err_code = abs_matrix(result_mat, self->mat);
+            break;
+        case '*':
+            err_code = mul_matrix(result_mat, self->mat, ((Matrix61c *)args)->mat);
+            break;
+        case '^':
+            err_code = pow_matrix(result_mat, self->mat, PyLong_AsLong(args));
+            break;
+        default:
+            return NULL;
+    }
+
+    if (err_check(err_code) == NULL) {
+        return NULL;
+    }
+
+    return (PyObject *)gen_Matrix61c(result_matrix);
+}
+
+/*
  * Add the second numc.Matrix (Matrix61c) object to the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-static PyObject *Matrix61c_add(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_add(Matrix61c *self, PyObject *args) {
+    /* YOUR CODE HERE */
+    return operator(self, args, '+');
 }
 
 /*
  * Substract the second numc.Matrix (Matrix61c) object from the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-static PyObject *Matrix61c_sub(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_sub(Matrix61c *self, PyObject *args) {
+    /* YOUR CODE HERE */
+    return operator(self, args, '-');
 }
 
 /*
  * NOT element-wise multiplication. The first operand is self, and the second operand
  * can be obtained by casting `args`.
  */
-static PyObject *Matrix61c_multiply(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_multiply(Matrix61c *self, PyObject *args) {
+    /* YOUR CODE HERE */
+    return operator(self, args, '*');
 }
 
 /*
  * Negates the given numc.Matrix.
  */
-static PyObject *Matrix61c_neg(Matrix61c *self) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_neg(Matrix61c *self) {
+    /* YOUR CODE HERE */
+    return operator(self, args, '~');
 }
 
 /*
  * Take the element-wise absolute value of this numc.Matrix.
  */
-static PyObject *Matrix61c_abs(Matrix61c *self) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_abs(Matrix61c *self) {
+    /* YOUR CODE HERE */
+    return operator(self, args, '|');
 }
 
 /*
  * Raise numc.Matrix (Matrix61c) to the `pow`th power. You can ignore the argument `optional`.
  */
-static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
+    /* YOUR CODE HERE */
+    return operator(self, args, '^');
 }
 
 /*
@@ -346,15 +422,42 @@ static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optiona
  * define. You might find this link helpful: https://docs.python.org/3.6/c-api/typeobj.html
  */
 static PyNumberMethods Matrix61c_as_number = {
-    /* TODO: YOUR CODE HERE */
+    /* YOUR CODE HERE */
+    .nb_add = (binaryfunc)Matrix61c_add,           .nb_subtract = (binaryfunc)Matrix61c_sub,
+    .nb_multiply = (binaryfunc)Matrix61c_multiply, .nb_power = (ternaryfunc)Matrix61c_pow,
+    .nb_negative = (unaryfunc)Matrix61c_neg,       .nb_absolute = (unaryfunc)Matrix61c_abs,
 };
 
 /* INSTANCE METHODS */
+
+/*
+ * Checks the error for get or set functions.
+ */
+PyObject *getset_err_check(Matrix61c *self, PyObject *args, int cond) {
+    if (PyTuple_Check(args) == 0 || !cond) {
+        PyErr_SetString(PyExc_TypeError, "Invalid Arguments");
+        return NULL;
+    } else if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
+        PyErr_SetString(PyExc_IndexError, "Row or Column Index Out-of-Range");
+        return NULL;
+    }
+}
+
 /*
  * Given a numc.Matrix self, parse `args` to (int) row, (int) col, and (double/int) val.
  * This function should return None in Python.
  */
-static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args) {
+    /* YOUR CODE HERE */
+    int row, col;
+    double val;
+
+    if (getset_err_check(self, args, PyArg_ParseTuple(args, "iid", &row, &col, &val)) {
+        return NULL;
+    }
+
+    set(self->mat, row, col, val);
+    return Py_None;
 }
 
 /*
@@ -362,7 +465,15 @@ static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject *args) { /* TODO:
  * This function should return the value at the `row`th row and `col`th column, which is a Python
  * float.
  */
-static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args) { /* TODO: YOUR CODE HERE */
+static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args) {
+    /* YOUR CODE HERE */
+    int row, col;
+
+    if (getset_err_check(self, args, PyArg_ParseTuple(args, "ii", &row, &col)) {
+        return NULL;
+    }
+
+    return (PyObject *)PyFloat_FromDouble(get(self->mat, row, col));
 }
 
 /*
@@ -372,7 +483,9 @@ static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject *args) { /* TODO:
  * You might find this link helpful: https://docs.python.org/3.6/c-api/structures.html
  */
 static PyMethodDef Matrix61c_methods[] = {
-    /* TODO: YOUR CODE HERE */
+    /* YOUR CODE HERE */
+    {"set", (PyCFunction)&Matrix61c_set_value, METH_VARARGS, ""},
+    {"get", (PyCFunction)&Matrix61c_get_value, METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}};
 
 /* INSTANCE ATTRIBUTES*/

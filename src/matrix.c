@@ -13,12 +13,6 @@
 #include <x86intrin.h>
 #endif
 
-#define DARK_ERROR -3
-#define RUNTIME_ERROR -2
-#define VALUE_ERROR -1
-#define INITIAL_VALUE 0.0
-#define DIMENSION_THRESHOLD 256
-
 /* Below are some intel intrinsics that might be useful
  * void _mm256_storeu_pd (double * mem_addr, __m256d a)
  * __m256d _mm256_set1_pd (double a)
