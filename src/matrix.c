@@ -359,13 +359,12 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         /* Performing Multiplication. */
         // todo
         int i, j, k;
-        for (i = 0, j = 0; i < result->rows; ++i) {
+        for (i = 0; i < result->rows; ++i) {
             for (k = 0; k < mat1->cols; ++k) {
-                temp = get(result, i, j);
+                temp = get(mat1, i, k);
                 for (j = 0; j < result->cols; ++j) {
-                    temp += get(mat1, i, k) * get(mat2, k, j);
+                    set(result, i, j, get(result, i, j) + (temp * get(mat2, k, j)));
                 }
-                set(result, i, j, temp);
             }
         }
         // tododeallocate_matrix(mat2_T);
