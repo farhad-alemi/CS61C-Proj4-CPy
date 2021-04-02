@@ -344,8 +344,8 @@ Matrix61c *gen_Matrix61c(matrix *result_matrix) {
 PyObject *operator(Matrix61c *self, PyObject *args, char operation) {
     int err_code;
     matrix *result_mat;
-    if (args == NULL || (operation != '^' && PyObject_TypeCheck(args, &Matrix61cType) == 0) ||
-        (operation == '^' && PyLong_Check(args) == 0)) {
+    if (PyObject_TypeCheck(self, &Matrix61cType) == 0 || args == NULL ||
+        (operation != '^' && PyObject_TypeCheck(args, &Matrix61cType) == 0) || (operation == '^' && PyLong_Check(args) == 0)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments");
         return NULL;
     }
@@ -455,7 +455,7 @@ static PyNumberMethods Matrix61c_as_number = {
  */
 PyObject *getset_err_check(Matrix61c *self, PyObject *args, int row, int col, int cond) {
     if (PyTuple_Check(args) == 0 || !cond) {
-        PyErr_SetString(PyExc_TypeError, "Invalid Arguments");
+        PyErr_SetString(PyExc_TypeError, "Invalid Arguments");  // todo verify self
         return NULL;
     } else if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
         PyErr_SetString(PyExc_IndexError, "Row or Column Index Out-of-Range");
