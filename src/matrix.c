@@ -241,7 +241,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     double first_val;
 
     if (result == NULL || mat1 == NULL || mat2 == NULL || result->data == NULL || mat1->data == NULL || mat2->data == NULL ||
-        mat1->rows != result->rows || mat1->cols != result->cols) {
+        (operation != 'T' && (mat1->rows != result->rows || mat1->cols != result->cols))) {
         return RUNTIME_ERROR;
     } else if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
         return VALUE_ERROR;
