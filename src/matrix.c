@@ -186,7 +186,12 @@ double *get_addr(matrix *mat, int row, int col) {
     }
 
     // stride = (mat->parent == NULL) ? mat->cols : mat->parent->cols; todo
-    stride = (mat->_is_special != 0) ? mat->cols : mat->parent->cols;
+    if (!mat->_is_special) {
+        stride = mat->cols;
+    } else {
+        stride = mat->parent->cols;
+    }
+    // stride = () ? mat->cols : mat->parent->cols;
 
     return mat->data + (stride * row) + col;
 }
