@@ -79,11 +79,13 @@ int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, in
         *((*mat)->ref_cnt) = 1;
         (*mat)->parent = NULL;
         fill_matrix(*mat, INITIAL_VALUE);
+        (*mat)->_is_special = 0;
     } else {
         (*mat)->data = from->data + (from->cols * row_offset) + col_offset;
         (*mat)->parent = (from->parent == NULL) ? from : from->parent;
         (*mat)->ref_cnt = (*mat)->parent->ref_cnt;
         *((*mat)->ref_cnt) = *((*mat)->ref_cnt) + 1;
+        (*mat)->_is_special = 1;
     }
 
     return 0;
@@ -115,13 +117,29 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
  * success.
  */
 int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int cols) {
-    // allocate_matrix_ref(&new_mat, self->mat, index * self->mat->cols, self->mat->cols, 1);
     /* YOUR CODE HERE */
-    if (cols <= 0 || rows <= 0) {
+    if (cols <= 0 || rows <= 0 || offset < 0) {
         return VALUE_ERROR;
+    } else if (from == NULL) {
+        return RUNTIME_ERROR;
     }
 
-    return allocator(mat, rows, cols, from, offset / from->cols, offset % from->cols, 1);
+    *mat = (matrix *)malloc(sizeof(matrix));
+    if (*mat == NULL) {
+        return RUNTIME_ERROR;
+    }
+
+    (*mat)->rows = rows;
+    (*mat)->cols = cols;
+    (*mat)->_is_special = 0;
+
+    (*mat)->data = from->data + offset;
+    (*mat)->parent = (from->parent == NULL) ? from : from->parent;
+    (*mat)->ref_cnt = (*mat)->parent->ref_cnt;
+    *((*mat)->ref_cnt) = *((*mat)->ref_cnt) + 1;
+}
+
+return 0;
 }
 
 /*
@@ -168,7 +186,8 @@ double *get_addr(matrix *mat, int row, int col) {
         return (double *)VALUE_ERROR;
     }
 
-    stride = (mat->parent == NULL) ? mat->cols : mat->parent->cols;
+    // stride = (mat->parent == NULL) ? mat->cols : mat->parent->cols; todo
+    stride = (mat->_is_special == 0) ? mat->cols : mat->parent->cols;
 
     return mat->data + (stride * row) + col;
 }
@@ -255,7 +274,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     set(result, c, r, get(mat1, r, c));
                     break;
                 default:
-                    exit(RUNTIME_ERROR);
+                    return RUNTIME_ERROR;
                     break;
             }
         }
