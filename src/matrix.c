@@ -66,6 +66,7 @@ int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, in
     (*mat)->cols = cols;
 
     if (!isSlice) {
+        (*mat)->_is_special = 0;
         (*mat)->data = (double *)malloc(sizeof(double) * rows * cols);
         if ((*mat)->data == NULL) {
             return RUNTIME_ERROR;
@@ -79,13 +80,12 @@ int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, in
         *((*mat)->ref_cnt) = 1;
         (*mat)->parent = NULL;
         fill_matrix(*mat, INITIAL_VALUE);
-        (*mat)->_is_special = 0;
     } else {
+        (*mat)->_is_special = 1;
         (*mat)->data = from->data + (from->cols * row_offset) + col_offset;
         (*mat)->parent = (from->parent == NULL) ? from : from->parent;
         (*mat)->ref_cnt = (*mat)->parent->ref_cnt;
         *((*mat)->ref_cnt) = *((*mat)->ref_cnt) + 1;
-        (*mat)->_is_special = 1;
     }
 
     return 0;
@@ -186,12 +186,7 @@ double *get_addr(matrix *mat, int row, int col) {
     }
 
     // stride = (mat->parent == NULL) ? mat->cols : mat->parent->cols; todo
-    if (!mat->_is_special) {
-        stride = mat->cols;
-    } else {
-        stride = mat->parent->cols;
-    }
-    // stride = () ? mat->cols : mat->parent->cols;
+    stride = (!mat->_is_special) ? mat->cols : mat->parent->cols;
 
     return mat->data + (stride * row) + col;
 }
