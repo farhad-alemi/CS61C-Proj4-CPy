@@ -318,22 +318,11 @@ PyObject *err_check(int signal) {
     return Py_None;
 }
 
-/*
- * Return a tuple given rows and cols
- */
-PyObject *get_shape(int rows, int cols) {
-    if (rows == 1 || cols == 1) {
-        return PyTuple_Pack(1, PyLong_FromLong(rows * cols));
-    } else {
-        return PyTuple_Pack(2, PyLong_FromLong(rows), PyLong_FromLong(cols));
-    }
-}
-
 /* Helper method which creates a Matrix61c struct. */
 Matrix61c *gen_Matrix61c(matrix *result_matrix) {
     Matrix61c *result_struct = (Matrix61c *)Matrix61c_new(&Matrix61cType, NULL, NULL);
     result_struct->mat = result_matrix;
-    result_struct->shape = get_shape(result_struct->mat->rows, result_struct->mat->cols);
+    result_struct->shape = PyTuple_Pack(2, PyLong_FromLong(result_struct->mat->rows), PyLong_FromLong(result_struct->mat->cols));
 
     return result_struct;
 }

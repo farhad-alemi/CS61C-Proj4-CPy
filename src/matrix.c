@@ -185,7 +185,6 @@ double *get_addr(matrix *mat, int row, int col) {
         return (double *)VALUE_ERROR;
     }
 
-    // stride = (mat->parent == NULL) ? mat->cols : mat->parent->cols; todo
     stride = (!mat->_is_special) ? mat->cols : mat->parent->cols;
 
     return mat->data + (stride * row) + col;
@@ -241,7 +240,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     double first_val;
 
     if (result == NULL || mat1 == NULL || mat2 == NULL || result->data == NULL || mat1->data == NULL || mat2->data == NULL ||
-        (operation != 'T' && (mat1->rows != result->rows || mat1->cols != result->cols))) {
+        mat1->rows != result->rows || mat1->cols != result->cols) {
         return RUNTIME_ERROR;
     } else if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
         return VALUE_ERROR;
@@ -268,14 +267,6 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     break;
                 case '=':
                     set(result, r, c, get(mat1, r, c));
-                    break;
-                case 'T':
-                    set(result, r, c, get(mat1, c, r));
-                    // todo
-                    // result->rows=5
-                    // result->cols=20
-                    // mat1->rows=20
-                    // mat1->cols=5
                     break;
                 default:
                     return RUNTIME_ERROR;
@@ -332,7 +323,7 @@ int abs_matrix(matrix *result, matrix *mat) {
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
     int err_code;
-    double temp;  // todo
+    double temp;
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
         result->rows != mat1->rows || result->cols != mat2->cols) {
@@ -342,32 +333,14 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     }
 
     if (mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat2->cols || mat1->rows % 2 != 0) {
-        // matrix *mat2_T; todo
-
-        // /* Allocating Transpose. */
-        // err_code = allocate_matrix(&mat2_T, mat2->cols, mat2->rows);
-        // if (err_code) {
-        //     return err_code;
-        // }
-
-        // /* Calculating Transpose. */
-        // err_code = mat_operator(mat2_T, mat2, mat2, 'T');  // todo avoid transpose?
-        // if (err_code) {
-        //     return err_code;
-        // }
-
-        /* Performing Multiplication. */
-        // todo
-        int i, j, k;
-        for (i = 0; i < result->rows; ++i) {
-            for (k = 0; k < mat1->cols; ++k) {
+        for (int i = 0; i < result->rows; ++i) {
+            for (int k = 0; k < mat1->cols; ++k) {
                 temp = get(mat1, i, k);
-                for (j = 0; j < result->cols; ++j) {
+                for (int j = 0; j < result->cols; ++j) {
                     set(result, i, j, get(result, i, j) + (temp * get(mat2, k, j)));
                 }
             }
         }
-        // tododeallocate_matrix(mat2_T);
     } else {
         /* Strassen's Algorithm */
         int half_dimension, err_code1, err_code2, err_code3, err_code4, err_code5, err_code6, err_code7;
