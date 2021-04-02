@@ -137,9 +137,8 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int co
     (*mat)->parent = (from->parent == NULL) ? from : from->parent;
     (*mat)->ref_cnt = (*mat)->parent->ref_cnt;
     *((*mat)->ref_cnt) = *((*mat)->ref_cnt) + 1;
-}
 
-return 0;
+    return 0;
 }
 
 /*
