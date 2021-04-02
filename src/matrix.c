@@ -357,10 +357,12 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         // }
 
         /* Performing Multiplication. */
-        for (int i = 0; i < result->rows; ++i) {
-            for (int k = 0; k < mat1->cols; ++k) {
-                temp = 0;
-                for (int j = 0; j < result->cols; ++j) {
+        // todo
+        int i, j, k;
+        for (i = 0, j = 0; i < result->rows; ++i) {
+            for (k = 0; k < mat1->cols; ++k) {
+                temp = get(result, i, j);
+                for (j = 0; j < result->cols; ++j) {
                     temp += get(mat1, i, k) * get(mat2, k, j);
                 }
                 set(result, i, j, temp);
