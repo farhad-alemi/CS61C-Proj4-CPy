@@ -332,7 +332,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         return VALUE_ERROR;
     }
 
-    if (1) {  // todo mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
+    if (0) {  // todo mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
         // mat1->rows % 2 != 0) {  // todo accomodate odd dims
         for (int i = 0; i < result->rows; ++i) {
             for (int k = 0; k < mat1->cols; ++k) {
@@ -343,11 +343,12 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
             }
         }
     } else {
-        int block_size = 16;  // todo
+        int block_size = 256;  // todo
         for (int ii = 0; ii < result->rows; ii += block_size) {
             for (int jj = 0; jj < result->cols; jj += block_size) {
                 for (int kk = 0; kk < mat1->cols; kk += block_size) {
-#pragma omp parallel for  // I think this is the best place for this case
+#pragma omp parallel for simd
+                    // #pragma omp parallel for  // I think this is the best place for this case
                     for (int i = ii; i < ii + block_size; i++) {
                         for (int k = kk; k < kk + block_size; k++) {
                             temp = get(mat1, i, k);
