@@ -200,14 +200,14 @@ class TestSet(TestCase):
         dp_mat.set(rand_row, rand_col, 2)
         nc_mat.set(rand_row, rand_col, 2)
         self.assertTrue(cmp_dp_nc_matrix(dp_mat, nc_mat))
-        self.assertEquals(nc_mat.get(rand_row, rand_col), 2)
+        self.assertEqual(nc_mat.get(rand_row, rand_col), 2)
 
     def test_large_set(self):
         # YOUR CODE HERE
         dp_mat, nc_mat = rand_dp_nc_matrix(9999, 9989, seed=0)
         rand_row = np.random.randint(dp_mat.shape[0])
         rand_col = np.random.randint(dp_mat.shape[1])
-        self.assertEquals(round(dp_mat[rand_row][rand_col], decimal_places),
+        self.assertEqual(round(dp_mat[rand_row][rand_col], decimal_places),
                           round(nc_mat[rand_row][rand_col], decimal_places))
 
 

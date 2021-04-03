@@ -443,8 +443,8 @@ static PyNumberMethods Matrix61c_as_number = {
  * Checks the error for get or set functions.
  */
 PyObject *getset_err_check(Matrix61c *self, PyObject *args, int row, int col, int cond) {
-    if (PyTuple_Check(args) == 0 || !cond) {
-        PyErr_SetString(PyExc_TypeError, "Invalid Arguments");  // todo verify self
+    if (PyObject_TypeCheck(self, &Matrix61cType) == 0 || PyTuple_Check(args) == 0 || !cond) {
+        PyErr_SetString(PyExc_TypeError, "Invalid Arguments");
         return NULL;
     } else if (row < 0 || row >= self->mat->rows || col < 0 || col >= self->mat->cols) {
         PyErr_SetString(PyExc_IndexError, "Row or Column Index Out-of-Range");
