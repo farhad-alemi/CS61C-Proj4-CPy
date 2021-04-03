@@ -347,7 +347,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         for (int ii = 0; ii < result->rows; ii += block_size) {
             for (int jj = 0; jj < result->cols; jj += block_size) {
                 for (int kk = 0; kk < mat1->cols; kk += block_size) {
-#pragma omp parallel for simd
+#pragma omp parallel for
                     // #pragma omp parallel for  // I think this is the best place for this case
                     for (int i = ii; i < ii + block_size; i++) {
                         for (int k = kk; k < kk + block_size; k++) {
