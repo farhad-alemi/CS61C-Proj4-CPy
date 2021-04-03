@@ -332,8 +332,8 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         return VALUE_ERROR;
     }
 
-    if (mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
-        mat1->rows % 2 != 0) {  // todo accomodate odd dims
+    if (1) {  // todo mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
+        // mat1->rows % 2 != 0) {  // todo accomodate odd dims
         for (int i = 0; i < result->rows; ++i) {
             for (int k = 0; k < mat1->cols; ++k) {
                 temp = get(mat1, i, k);

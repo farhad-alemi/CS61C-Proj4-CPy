@@ -43,7 +43,7 @@ def rand_dp_nc_matrix(rows, cols, seed=0):
 
 """
 Returns whether the given dumbpy matrix dp_mat is equal to the numc matrix nc_mat
-This function allows a reasonable margin of( floating point errors
+This function allows a reasonable margin of(floating point errors)
 """
 def cmp_dp_nc_matrix(dp_mat: dp.Matrix, nc_mat: nc.Matrix):
     return rand_md5(dp_mat) == rand_md5(nc_mat)
