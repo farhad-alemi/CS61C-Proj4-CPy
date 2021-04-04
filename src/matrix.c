@@ -355,14 +355,14 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                                                    _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
                     break;
                 case 'I':
-                    *(result->data + index + 0) = (((index + 0) / mat->cols) == ((index + 0) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 1) = (((index + 1) / mat->cols) == ((index + 1) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 2) = (((index + 2) / mat->cols) == ((index + 2) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 3) = (((index + 3) / mat->cols) == ((index + 3) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 4) = (((index + 4) / mat->cols) == ((index + 4) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 5) = (((index + 5) / mat->cols) == ((index + 5) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 6) = (((index + 6) / mat->cols) == ((index + 6) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 7) = (((index + 7) / mat->cols) == ((index + 7) % mat->cols)) ? 1 : 0;
+                    *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
                     break;
                 case '=':
                     _mm256_storeu_pd(result->data + index + 0, _mm256_loadu_pd((const double *)(mat1->data + index + 0)));
@@ -388,7 +388,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                 *(result->data + index) = -*(mat1->data + index);
                 break;
             case '|':
-                *(result->data + index + 0) = *(mat1->data + index + 0) & 0x7FFFFFFFFFFFFFFF;
+                *(result->data + index + 0) = fabs(*(mat1->data + index + 0));
                 break;
             case 'I':
                 *(result->data + index) = ((index / mat->cols) == (index % mat->cols)) ? 1 : 0;
