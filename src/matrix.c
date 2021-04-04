@@ -371,7 +371,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
                     break;
                 default:
-                    return RUNTIME_ERROR;
+                    // return RUNTIME_ERROR;
                     break;
             }
         }
