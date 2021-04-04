@@ -416,7 +416,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     }
 
     /* Tail Case */
-    for (index = threshold; index < STRIDE; ++index) {
+    for (index = threshold; index < dim; ++index) {
         switch (operation) {
             case '+':
                 *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
