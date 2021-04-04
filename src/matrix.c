@@ -245,9 +245,10 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
         return VALUE_ERROR;
     }
 
-    if (0) {
+    if (1) {
         // if (result->rows * result->cols < DIMENSION_THRESHOLD / 2) {
-        for (int index = 0; index < (result->rows * result->cols) / STRIDE * STRIDE; index += STRIDE) {
+#pragma omp parallel for
+        for (int index = 0; index < (result->rows * result->cols) / (STRIDE / 2) * (STRIDE / 2); index += (STRIDE / 2)) {
             switch (operation) {
                 case '+':
                     *(result->data + index + 0) = *(mat1->data + index + 0) + *(mat2->data + index + 0);
