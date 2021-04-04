@@ -5,7 +5,7 @@
 #define VALUE_ERROR -1
 #define CACHE_LINE_SIZE 64
 #define STRIDE (CACHE_LINE_SIZE / sizeof(double))
-#define DIMENSION_THRESHOLD 256
+#define DIMENSION_THRESHOLD 128
 
 typedef struct matrix {
     int rows;              /* number of rows */
