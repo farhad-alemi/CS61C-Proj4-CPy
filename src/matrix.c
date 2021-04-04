@@ -317,6 +317,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
         }
 
     } else {
+#pragma omp parallel for
         for (int index = 0; index < (result->rows * result->cols) / STRIDE * STRIDE; index += STRIDE) {
             switch (operation) {
                 case '+':
