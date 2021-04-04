@@ -391,7 +391,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                 *(result->data + index + 0) = fabs(*(mat1->data + index + 0));
                 break;
             case 'I':
-                *(result->data + index) = ((index / mat->cols) == (index % mat->cols)) ? 1 : 0;
+                *(result->data + index) = ((index / mat1->cols) == (index % mat1->cols)) ? 1 : 0;
                 break;
             case '=':
                 *(result->data + index) = *(mat1->data + index);
