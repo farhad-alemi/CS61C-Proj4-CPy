@@ -280,24 +280,24 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     *(result->data + index + 7) = -*(mat1->data + index + 7);
                     break;
                 case '|':
-                    *(result->data + index + 0) = *(mat1->data + index + 0) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 1) = *(mat1->data + index + 1) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 2) = *(mat1->data + index + 2) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 3) = *(mat1->data + index + 3) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 4) = *(mat1->data + index + 4) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 5) = *(mat1->data + index + 5) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 6) = *(mat1->data + index + 6) & 0x7FFFFFFFFFFFFFFF;
-                    *(result->data + index + 7) = *(mat1->data + index + 7) & 0x7FFFFFFFFFFFFFFF;
+                    *(result->data + index + 0) = fabs(*(mat1->data + index + 0));
+                    *(result->data + index + 1) = fabs(*(mat1->data + index + 1));
+                    *(result->data + index + 2) = fabs(*(mat1->data + index + 2));
+                    *(result->data + index + 3) = fabs(*(mat1->data + index + 3));
+                    *(result->data + index + 4) = fabs(*(mat1->data + index + 4));
+                    *(result->data + index + 5) = fabs(*(mat1->data + index + 5));
+                    *(result->data + index + 6) = fabs(*(mat1->data + index + 6));
+                    *(result->data + index + 7) = fabs(*(mat1->data + index + 7));
                     break;
                 case 'I':
-                    *(result->data + index + 0) = (((index + 0) / mat->cols) == ((index + 0) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 1) = (((index + 1) / mat->cols) == ((index + 1) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 2) = (((index + 2) / mat->cols) == ((index + 2) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 3) = (((index + 3) / mat->cols) == ((index + 3) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 4) = (((index + 4) / mat->cols) == ((index + 4) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 5) = (((index + 5) / mat->cols) == ((index + 5) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 6) = (((index + 6) / mat->cols) == ((index + 6) % mat->cols)) ? 1 : 0;
-                    *(result->data + index + 7) = (((index + 7) / mat->cols) == ((index + 7) % mat->cols)) ? 1 : 0;
+                    *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
                     break;
                 case '=':
                     *(result->data + index + 0) = *(mat1->data + index + 0);
