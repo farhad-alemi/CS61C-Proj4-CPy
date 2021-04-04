@@ -317,7 +317,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
 #pragma omp parallel
         {
 #pragma omp for
-            for (int index = 0; index < (result->rows * result->cols) / (STRIDE / 2) * STRIDE / 2; index += (STRIDE / 2)) {
+            for (int index = 0; index < (result->rows * result->cols) / 4 * 4; index += 4) {
                 switch (operation) {
                     case '+':
                         _mm256_storeu_pd(result->data + index,
@@ -413,7 +413,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     }
 
     /* Tail Case */
-    for (index = (result->rows * result->cols) / (STRIDE / 2) * STRIDE / 2; index < result->rows * result->cols; ++index) {
+    for (index = (result->rows * result->cols) / 4 * 4; index < result->rows * result->cols; ++index) {
         switch (operation) {
             case '+':
                 *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
