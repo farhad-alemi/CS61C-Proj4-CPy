@@ -245,13 +245,16 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
         return VALUE_ERROR;
     }
 
-    if (1) {
-        // if (result->rows * result->cols < DIMENSION_THRESHOLD / 2) {
+    int dim = result->rows * result->cols;
+
+    int t = dim / 4 * 4;
+    // int s = 4;
+    if (result->rows * result->cols < DIMENSION_THRESHOLD / 2) {
 #pragma omp parallel for
-        for (int index = 0; index < (result->rows * result->cols) / (STRIDE / 2) * (STRIDE / 2); index += (STRIDE / 2)) {
+        for (int index = 0; index < t; index += 4) {
             switch (operation) {
                 case '+':
-                    *(result->data + index + 0) = *(mat1->data + index + 0) + *(mat2->data + index + 0);
+                    *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
                     *(result->data + index + 1) = *(mat1->data + index + 1) + *(mat2->data + index + 1);
                     *(result->data + index + 2) = *(mat1->data + index + 2) + *(mat2->data + index + 2);
                     *(result->data + index + 3) = *(mat1->data + index + 3) + *(mat2->data + index + 3);
@@ -261,7 +264,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     // *(result->data + index + 7) = *(mat1->data + index + 7) + *(mat2->data + index + 7);
                     break;
                 case '-':
-                    *(result->data + index + 0) = *(mat1->data + index + 0) - *(mat2->data + index + 0);
+                    *(result->data + index) = *(mat1->data + index) - *(mat2->data + index);
                     *(result->data + index + 1) = *(mat1->data + index + 1) - *(mat2->data + index + 1);
                     *(result->data + index + 2) = *(mat1->data + index + 2) - *(mat2->data + index + 2);
                     *(result->data + index + 3) = *(mat1->data + index + 3) - *(mat2->data + index + 3);
@@ -271,7 +274,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     // *(result->data + index + 7) = *(mat1->data + index + 7) - *(mat2->data + index + 7);
                     break;
                 case '~':
-                    *(result->data + index + 0) = -*(mat1->data + index + 0);
+                    *(result->data + index) = -*(mat1->data + index);
                     *(result->data + index + 1) = -*(mat1->data + index + 1);
                     *(result->data + index + 2) = -*(mat1->data + index + 2);
                     *(result->data + index + 3) = -*(mat1->data + index + 3);
@@ -281,7 +284,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     // *(result->data + index + 7) = -*(mat1->data + index + 7);
                     break;
                 case '|':
-                    *(result->data + index + 0) = fabs(*(mat1->data + index + 0));
+                    *(result->data + index) = fabs(*(mat1->data + index));
                     *(result->data + index + 1) = fabs(*(mat1->data + index + 1));
                     *(result->data + index + 2) = fabs(*(mat1->data + index + 2));
                     *(result->data + index + 3) = fabs(*(mat1->data + index + 3));
@@ -291,7 +294,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     // *(result->data + index + 7) = fabs(*(mat1->data + index + 7));
                     break;
                 case 'I':
-                    *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
+                    *(result->data + index) = (((index) / mat1->cols) == ((index) % mat1->cols)) ? 1 : 0;
                     *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
                     *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
                     *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
@@ -301,7 +304,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     // *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
                     break;
                 case '=':
-                    *(result->data + index + 0) = *(mat1->data + index + 0);
+                    *(result->data + index) = *(mat1->data + index);
                     *(result->data + index + 1) = *(mat1->data + index + 1);
                     *(result->data + index + 2) = *(mat1->data + index + 2);
                     *(result->data + index + 3) = *(mat1->data + index + 3);
@@ -314,12 +317,11 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     break;
             }
         }
-
     } else {
 #pragma omp parallel
         {
 #pragma omp for
-            for (int index = 0; index < (result->rows * result->cols) / (STRIDE / 2) * STRIDE / 2; index += (STRIDE / 2)) {
+            for (int index = 0; index < t; index += 4) {
                 switch (operation) {
                     case '+':
                         _mm256_storeu_pd(result->data + index,
@@ -391,14 +393,14 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                         //     12))));
                         break;
                     case 'I':
-                        *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
+                        *(result->data + index) = (((index) / mat1->cols) == ((index) % mat1->cols)) ? 1 : 0;
                         *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
                         *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
                         *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
+                        // *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
+                        // *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
+                        // *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
+                        // *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
                         break;
                     case '=':
                         _mm256_storeu_pd(result->data + index, _mm256_loadu_pd((const double *)(mat1->data + index)));
@@ -415,7 +417,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     }
 
     /* Tail Case */
-    for (index = (result->rows * result->cols) / (STRIDE / 2) * (STRIDE / 2); index < result->rows * result->cols; ++index) {
+    for (index = t; index < dim; ++index) {
         switch (operation) {
             case '+':
                 *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
@@ -427,7 +429,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                 *(result->data + index) = -*(mat1->data + index);
                 break;
             case '|':
-                *(result->data + index + 0) = fabs(*(mat1->data + index + 0));
+                *(result->data + index) = fabs(*(mat1->data + index));
                 break;
             case 'I':
                 *(result->data + index) = ((index / mat1->cols) == (index % mat1->cols)) ? 1 : 0;
