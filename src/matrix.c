@@ -346,13 +346,13 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                         _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
                     break;
                 case '|':
-                    _mm256_storeu_pd(result->data + index + 0,
-                                     _mm256_and_pd(_mm256_set1_pd(0x7FFFFFFFFFFFFFFF),
-                                                   _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
+                    _mm256_storeu_pd(
+                        result->data + index + 0,
+                        _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
 
-                    _mm256_storeu_pd(result->data + index + 4,
-                                     _mm256_and_pd(_mm256_set1_pd(0x7FFFFFFFFFFFFFFF),
-                                                   _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
+                    _mm256_storeu_pd(
+                        result->data + index + 4,
+                        _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
                     break;
                 case 'I':
                     *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
