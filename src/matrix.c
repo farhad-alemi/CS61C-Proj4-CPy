@@ -246,134 +246,63 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
         return VALUE_ERROR;
     }
 
-    if (0) {
-        // todo if (result->rows * result->cols < 2 * DIMENSION_THRESHOLD * DIMENSION_THRESHOLD) {
-        for (int index = 0; index < (result->rows * result->cols) / STRIDE * STRIDE; index += STRIDE) {
-            switch (operation) {
-                case '+':
-                    *(result->data + index + 0) = *(mat1->data + index + 0) + *(mat2->data + index + 0);
-                    *(result->data + index + 1) = *(mat1->data + index + 1) + *(mat2->data + index + 1);
-                    *(result->data + index + 2) = *(mat1->data + index + 2) + *(mat2->data + index + 2);
-                    *(result->data + index + 3) = *(mat1->data + index + 3) + *(mat2->data + index + 3);
-                    *(result->data + index + 4) = *(mat1->data + index + 4) + *(mat2->data + index + 4);
-                    *(result->data + index + 5) = *(mat1->data + index + 5) + *(mat2->data + index + 5);
-                    *(result->data + index + 6) = *(mat1->data + index + 6) + *(mat2->data + index + 6);
-                    *(result->data + index + 7) = *(mat1->data + index + 7) + *(mat2->data + index + 7);
-                    break;
-                case '-':
-                    *(result->data + index + 0) = *(mat1->data + index + 0) - *(mat2->data + index + 0);
-                    *(result->data + index + 1) = *(mat1->data + index + 1) - *(mat2->data + index + 1);
-                    *(result->data + index + 2) = *(mat1->data + index + 2) - *(mat2->data + index + 2);
-                    *(result->data + index + 3) = *(mat1->data + index + 3) - *(mat2->data + index + 3);
-                    *(result->data + index + 4) = *(mat1->data + index + 4) - *(mat2->data + index + 4);
-                    *(result->data + index + 5) = *(mat1->data + index + 5) - *(mat2->data + index + 5);
-                    *(result->data + index + 6) = *(mat1->data + index + 6) - *(mat2->data + index + 6);
-                    *(result->data + index + 7) = *(mat1->data + index + 7) - *(mat2->data + index + 7);
-                    break;
-                case '~':
-                    *(result->data + index + 0) = -*(mat1->data + index + 0);
-                    *(result->data + index + 1) = -*(mat1->data + index + 1);
-                    *(result->data + index + 2) = -*(mat1->data + index + 2);
-                    *(result->data + index + 3) = -*(mat1->data + index + 3);
-                    *(result->data + index + 4) = -*(mat1->data + index + 4);
-                    *(result->data + index + 5) = -*(mat1->data + index + 5);
-                    *(result->data + index + 6) = -*(mat1->data + index + 6);
-                    *(result->data + index + 7) = -*(mat1->data + index + 7);
-                    break;
-                case '|':
-                    *(result->data + index + 0) = fabs(*(mat1->data + index + 0));
-                    *(result->data + index + 1) = fabs(*(mat1->data + index + 1));
-                    *(result->data + index + 2) = fabs(*(mat1->data + index + 2));
-                    *(result->data + index + 3) = fabs(*(mat1->data + index + 3));
-                    *(result->data + index + 4) = fabs(*(mat1->data + index + 4));
-                    *(result->data + index + 5) = fabs(*(mat1->data + index + 5));
-                    *(result->data + index + 6) = fabs(*(mat1->data + index + 6));
-                    *(result->data + index + 7) = fabs(*(mat1->data + index + 7));
-                    break;
-                case 'I':
-                    *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
-                    break;
-                case '=':
-                    *(result->data + index + 0) = *(mat1->data + index + 0);
-                    *(result->data + index + 1) = *(mat1->data + index + 1);
-                    *(result->data + index + 2) = *(mat1->data + index + 2);
-                    *(result->data + index + 3) = *(mat1->data + index + 3);
-                    *(result->data + index + 4) = *(mat1->data + index + 4);
-                    *(result->data + index + 5) = *(mat1->data + index + 5);
-                    *(result->data + index + 6) = *(mat1->data + index + 6);
-                    *(result->data + index + 7) = *(mat1->data + index + 7);
-                    break;
-                default:
-                    return RUNTIME_ERROR;
-                    break;
-            }
-        }
-
-    } else {
+    if (result->rows * result->cols < 2 * DIMENSION_THRESHOLD * DIMENSION_THRESHOLD) {
+        omp_set_num_threads(2);
+    }
 #pragma omp parallel for
-        for (int index = 0; index < (result->rows * result->cols) / STRIDE * STRIDE; index += STRIDE) {
-            switch (operation) {
-                case '+':
-                    _mm256_storeu_pd(result->data + index + 0,
-                                     _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 0)),
-                                                   _mm256_loadu_pd((const double *)(mat2->data + index + 0))));
+    for (int index = 0; index < (result->rows * result->cols) / STRIDE * STRIDE; index += STRIDE) {
+        switch (operation) {
+            case '+':
+                _mm256_storeu_pd(result->data + index + 0,
+                                 _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 0)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 0))));
 
-                    _mm256_storeu_pd(result->data + index + 4,
-                                     _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                                   _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
-                    break;
-                case '-':
-                    _mm256_storeu_pd(result->data + index + 0,
-                                     _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 0)),
-                                                   _mm256_loadu_pd((const double *)(mat2->data + index + 0))));
+                _mm256_storeu_pd(result->data + index + 4,
+                                 _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
+                break;
+            case '-':
+                _mm256_storeu_pd(result->data + index + 0,
+                                 _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 0)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 0))));
 
-                    _mm256_storeu_pd(result->data + index + 4,
-                                     _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                                   _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
-                    break;
-                case '~':
-                    _mm256_storeu_pd(
-                        result->data + index + 0,
-                        _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
+                _mm256_storeu_pd(result->data + index + 4,
+                                 _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
+                break;
+            case '~':
+                _mm256_storeu_pd(result->data + index + 0,
+                                 _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
 
-                    _mm256_storeu_pd(
-                        result->data + index + 4,
-                        _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
-                    break;
-                case '|':
-                    _mm256_storeu_pd(
-                        result->data + index + 0,
-                        _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
+                _mm256_storeu_pd(result->data + index + 4,
+                                 _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
+                break;
+            case '|':
+                _mm256_storeu_pd(
+                    result->data + index + 0,
+                    _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
 
-                    _mm256_storeu_pd(
-                        result->data + index + 4,
-                        _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
-                    break;
-                case 'I':
-                    *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
-                    *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
-                    break;
-                case '=':
-                    _mm256_storeu_pd(result->data + index + 0, _mm256_loadu_pd((const double *)(mat1->data + index + 0)));
-                    _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
-                    break;
-                default:
-                    // return RUNTIME_ERROR;
-                    break;
-            }
+                _mm256_storeu_pd(
+                    result->data + index + 4,
+                    _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
+                break;
+            case 'I':
+                *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
+                *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
+                break;
+            case '=':
+                _mm256_storeu_pd(result->data + index + 0, _mm256_loadu_pd((const double *)(mat1->data + index + 0)));
+                _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
+                break;
+            default:
+                // return RUNTIME_ERROR;
+                break;
         }
     }
 
