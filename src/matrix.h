@@ -3,8 +3,7 @@
 #define DARK_ERROR -3
 #define RUNTIME_ERROR -2
 #define VALUE_ERROR -1
-#define CACHE_LINE_SIZE 64
-#define STRIDE (CACHE_LINE_SIZE / sizeof(double))
+#define STRIDE 16
 #define DIMENSION_THRESHOLD 128
 
 typedef struct matrix {
