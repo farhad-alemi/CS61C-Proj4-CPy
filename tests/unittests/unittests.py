@@ -83,7 +83,7 @@ class TestAbs(TestCase):
 
     def test_large_abs(self):
         # YOUR CODE HERE
-        dp_mat, nc_mat = rand_dp_nc_matrix(50000, 50001, seed=0)
+        dp_mat, nc_mat = rand_dp_nc_matrix(10000, 10000, seed=0)
         is_correct, speed_up = compute([dp_mat], [nc_mat], "abs")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
