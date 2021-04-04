@@ -317,75 +317,76 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
 #pragma omp parallel
         {
 #pragma omp for
-            for (int index = 0; index < (result->rows * result->cols) / (2 * STRIDE) * 2 * STRIDE; index += (2 * STRIDE)) {
+            for (int index = 0; index < (result->rows * result->cols) / (STRIDE / 2) * STRIDE / 2; index += (STRIDE / 2)) {
                 switch (operation) {
                     case '+':
-                        _mm256_storeu_pd(result->data + index + 0,
-                                         _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 0)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 0))));
+                        _mm256_storeu_pd(result->data + index,
+                                         _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
+                                                       _mm256_loadu_pd((const double *)(mat2->data + index))));
 
-                        _mm256_storeu_pd(result->data + index + 4,
-                                         _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
+                        // _mm256_storeu_pd(result->data + index + 4,
+                        //                  _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                        //                                _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
 
-                        _mm256_storeu_pd(result->data + index + 8,
-                                         _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 8))));
+                        // _mm256_storeu_pd(result->data + index + 8,
+                        //                  _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                        //                                _mm256_loadu_pd((const double *)(mat2->data + index + 8))));
 
-                        _mm256_storeu_pd(result->data + index + 12,
-                                         _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 12))));
+                        // _mm256_storeu_pd(result->data + index + 12,
+                        //                  _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                        //                                _mm256_loadu_pd((const double *)(mat2->data + index + 12))));
                         break;
                     case '-':
-                        _mm256_storeu_pd(result->data + index + 0,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 0)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 0))));
+                        _mm256_storeu_pd(result->data + index,
+                                         _mm256_sub_pd(_mm256_loadu_pd((mat1->data + index)),
+                                                       _mm256_loadu_pd((const double *)(mat2->data + index))));
 
-                        _mm256_storeu_pd(result->data + index + 4,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
+                        // _mm256_storeu_pd(result->data + index + 4,
+                        //                  _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                        //                                _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
 
-                        _mm256_storeu_pd(result->data + index + 8,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 8))));
+                        // _mm256_storeu_pd(result->data + index + 8,
+                        //                  _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                        //                                _mm256_loadu_pd((const double *)(mat2->data + index + 8))));
 
-                        _mm256_storeu_pd(result->data + index + 12,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 12))));
+                        // _mm256_storeu_pd(result->data + index + 12,
+                        //                  _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                        //                                _mm256_loadu_pd((const double *)(mat2->data + index + 12))));
                         break;
                     case '~':
                         _mm256_storeu_pd(
-                            result->data + index + 0,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
+                            result->data + index,
+                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index))));
 
-                        _mm256_storeu_pd(
-                            result->data + index + 4,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
+                        // _mm256_storeu_pd(
+                        //     result->data + index + 4,
+                        //     _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
 
-                        _mm256_storeu_pd(
-                            result->data + index + 8,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 8))));
+                        // _mm256_storeu_pd(
+                        //     result->data + index + 8,
+                        //     _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 8))));
 
-                        _mm256_storeu_pd(
-                            result->data + index + 12,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 12))));
+                        // _mm256_storeu_pd(
+                        //     result->data + index + 12,
+                        //     _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 12))));
                         break;
                     case '|':
                         _mm256_storeu_pd(
-                            result->data + index + 0,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 0))));
+                            result->data + index,
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index))));
 
-                        _mm256_storeu_pd(
-                            result->data + index + 4,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
+                        // _mm256_storeu_pd(
+                        //     result->data + index + 4,
+                        //     _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
 
-                        _mm256_storeu_pd(
-                            result->data + index + 8,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 8))));
+                        // _mm256_storeu_pd(
+                        //     result->data + index + 8,
+                        //     _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 8))));
 
-                        _mm256_storeu_pd(
-                            result->data + index + 12,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 12))));
+                        // _mm256_storeu_pd(
+                        //     result->data + index + 12,
+                        //     _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index +
+                        //     12))));
                         break;
                     case 'I':
                         *(result->data + index + 0) = (((index + 0) / mat1->cols) == ((index + 0) % mat1->cols)) ? 1 : 0;
@@ -398,10 +399,11 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                         *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
                         break;
                     case '=':
-                        _mm256_storeu_pd(result->data + index + 0, _mm256_loadu_pd((const double *)(mat1->data + index + 0)));
-                        _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
-                        _mm256_storeu_pd(result->data + index + 8, _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
-                        _mm256_storeu_pd(result->data + index + 12, _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
+                        _mm256_storeu_pd(result->data + index, _mm256_loadu_pd((const double *)(mat1->data + index)));
+                        // _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
+                        // _mm256_storeu_pd(result->data + index + 8, _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
+                        // _mm256_storeu_pd(result->data + index + 12, _mm256_loadu_pd((const double *)(mat1->data + index +
+                        // 12)));
                         break;
                     default:
                         break;
@@ -411,7 +413,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     }
 
     /* Tail Case */
-    for (index = (result->rows * result->cols) / (2 * STRIDE) * 2 * STRIDE; index < result->rows * result->cols; ++index) {
+    for (index = (result->rows * result->cols) / (STRIDE / 2) * STRIDE / 2; index < result->rows * result->cols; ++index) {
         switch (operation) {
             case '+':
                 *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
