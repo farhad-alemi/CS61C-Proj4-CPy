@@ -246,7 +246,8 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
         return VALUE_ERROR;
     }
 
-    if (result->rows * result->cols < 2 * DIMENSION_THRESHOLD * DIMENSION_THRESHOLD) {
+    if (0) {
+        // todo if (result->rows * result->cols < 2 * DIMENSION_THRESHOLD * DIMENSION_THRESHOLD) {
         for (int index = 0; index < (result->rows * result->cols) / STRIDE * STRIDE; index += STRIDE) {
             switch (operation) {
                 case '+':
