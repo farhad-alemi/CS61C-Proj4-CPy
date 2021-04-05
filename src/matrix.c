@@ -307,9 +307,9 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     } else {
-        omp_set_num_threads(4);
 #pragma omp parallel
         {
+            omp_set_num_threads(64);
             __m256d arr[4];
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
