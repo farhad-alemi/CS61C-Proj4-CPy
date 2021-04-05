@@ -340,10 +340,10 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                         *(arr + 3) = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
                                                    _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
 
-                        _mm256_storeu_pd(result->data + index, (const double *)arr);
-                        _mm256_storeu_pd(result->data + index + 4, (const double *)(arr + 1));
-                        _mm256_storeu_pd(result->data + index + 8, (const double *)(arr + 2));
-                        _mm256_storeu_pd(result->data + index + 12, (const double *)(arr + 3));
+                        _mm256_storeu_pd(result->data + index, *arr);
+                        _mm256_storeu_pd(result->data + index + 4, *(arr + 1));
+                        _mm256_storeu_pd(result->data + index + 8, *(arr + 2));
+                        _mm256_storeu_pd(result->data + index + 12, *(arr + 3));
                         break;
                     case '-':
                         _mm256_storeu_pd(result->data + index,
