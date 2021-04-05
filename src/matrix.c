@@ -247,7 +247,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
 
     dim = result->rows * result->cols;
     threshold = dim / STRIDE * STRIDE;
-    if (opertion = 'I' || dim < DIMENSION_THRESHOLD) {
+    if (operation = 'I' || dim < DIMENSION_THRESHOLD) {
         small_stride = STRIDE / 2;
 #pragma omp parallel for
         for (int index = 0; index < threshold; index += small_stride) {
@@ -392,8 +392,8 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                 // _mm256_storeu_pd(result->data + index + 12, arr[3]);
             }
 #pragma omp for
-            for (int i = 0; i < thresold; ++i) {
-                _mm256_storeu_pd(result->data + (i * 4), arr[i])
+            for (int i = 0; i < threshold; ++i) {
+                _mm256_storeu_pd(result->data + (i * 4), arr[i]);
             }
         }
 
