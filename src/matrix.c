@@ -307,54 +307,57 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     } else {
-        // #pragma omp parallel
-        // {
-        // omp_set_num_threads(4);
-        __m256d arr[4];
-        // #pragma omp for
-        for (int index = 0; index < threshold; index += STRIDE) {
-            switch (operation) {
-                case '+':
-                    arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index)));
-                    arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
-                    arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
-                    arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
-                    break;
-                case '-':
-                    arr[0] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index)));
-                    arr[1] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
-                    arr[2] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
-                    arr[3] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                           _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
-                    break;
-                case '~':
-                    arr[0] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index)));
-                    arr[1] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
-                    arr[2] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
-                    arr[3] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
-                    break;
-                case '|':
-                    arr[0] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index)));
-                    arr[1] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
-                    arr[2] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
-                    arr[3] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
-                    break;
-                default:
-                    break;
+#pragma omp parallel
+        {
+            omp_set_num_threads(32);
+            __m256d arr[4];
+#pragma omp for
+            for (int index = 0; index < threshold; index += STRIDE) {
+                switch (operation) {
+                    case '+':
+                        arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index)));
+                        arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
+                        arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
+                        arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
+                        break;
+                    case '-':
+                        arr[0] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index)));
+                        arr[1] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
+                        arr[2] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
+                        arr[3] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
+                        break;
+                    case '~':
+                        arr[0] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index)));
+                        arr[1] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
+                        arr[2] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
+                        arr[3] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
+                        break;
+                    case '|':
+                        arr[0] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index)));
+                        arr[1] =
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
+                        arr[2] =
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
+                        arr[3] =
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
+                        break;
+                    default:
+                        break;
+                }
+                _mm256_storeu_pd(result->data + index, arr[0]);
+                _mm256_storeu_pd(result->data + index + 4, arr[1]);
+                _mm256_storeu_pd(result->data + index + 8, arr[2]);
+                _mm256_storeu_pd(result->data + index + 12, arr[3]);
             }
-            _mm256_storeu_pd(result->data + index, arr[0]);
-            _mm256_storeu_pd(result->data + index + 4, arr[1]);
-            _mm256_storeu_pd(result->data + index + 8, arr[2]);
-            _mm256_storeu_pd(result->data + index + 12, arr[3]);
         }
-        // }
     }
 
     /* Tail Case */
