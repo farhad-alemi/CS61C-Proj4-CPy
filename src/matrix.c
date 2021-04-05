@@ -307,7 +307,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     } else {
-        omp_set_num_threads(16);
+        omp_set_num_threads(4);
 #pragma omp parallel
         {
             __m256d arr[4];
