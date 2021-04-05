@@ -247,7 +247,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
 
     dim = result->rows * result->cols;
     threshold = dim / STRIDE * STRIDE;
-    if (dim < DIMENSION_THRESHOLD) {
+    if (opertion = 'I' || dim < DIMENSION_THRESHOLD) {
         small_stride = STRIDE / 2;
 #pragma omp parallel for
         for (int index = 0; index < threshold; index += small_stride) {
@@ -317,51 +317,31 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     } else {
+        __m256d arr[threshold];
 #pragma omp parallel
         {
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
-                __m256d arr[4];
-
                 switch (operation) {
                     case '+':
-                        // _mm256_storeu_pd(result->data + index,
-                        arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
-                                               _mm256_loadu_pd((const double *)(mat2->data + index)));
-
-                        //  _mm256_storeu_pd(result->data + index + 4,
-                        arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
-
-                        // _mm256_storeu_pd(result->data + index + 8,
-                        arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                               _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
-
-                        // _mm256_storeu_pd(result->data + index + 12,
-                        arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                               _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
-
-                        _mm256_storeu_pd(result->data + index, arr[0]);
-                        _mm256_storeu_pd(result->data + index + 4, arr[1]);
-                        _mm256_storeu_pd(result->data + index + 8, arr[2]);
-                        _mm256_storeu_pd(result->data + index + 12, arr[3]);
+                        arr[index] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
+                                                   _mm256_loadu_pd((const double *)(mat2->data + index)));
+                        arr[index + 1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
+                        arr[index + 2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
+                        arr[index + 3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
                         break;
                     case '-':
-                        _mm256_storeu_pd(result->data + index,
-                                         _mm256_sub_pd(_mm256_loadu_pd((mat1->data + index)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index))));
-
-                        _mm256_storeu_pd(result->data + index + 4,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 4))));
-
-                        _mm256_storeu_pd(result->data + index + 8,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 8))));
-
-                        _mm256_storeu_pd(result->data + index + 12,
-                                         _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 12))));
+                        arr[0] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index)));
+                        arr[1] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
+                        arr[2] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
+                        arr[3] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
                         break;
                     case '~':
                         _mm256_storeu_pd(
@@ -397,16 +377,6 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                             result->data + index + 12,
                             _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 12))));
                         break;
-                    case 'I':
-                        *(result->data + index) = (((index) / mat1->cols) == ((index) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
-                        *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
-                        break;
                     case '=':
                         _mm256_storeu_pd(result->data + index, _mm256_loadu_pd((const double *)(mat1->data + index)));
                         _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
@@ -416,380 +386,387 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     default:
                         break;
                 }
+                // _mm256_storeu_pd(result->data + index, arr[0]);
+                // _mm256_storeu_pd(result->data + index + 4, arr[1]);
+                // _mm256_storeu_pd(result->data + index + 8, arr[2]);
+                // _mm256_storeu_pd(result->data + index + 12, arr[3]);
+            }
+#pragma omp for
+            for (int i = 0; i < thresold; ++i) {
+                _mm256_storeu_pd(result->data + (i * 4), arr[i])
             }
         }
-    }
 
-    /* Tail Case */
-    for (index = threshold; index < dim; ++index) {
-        switch (operation) {
-            case '+':
-                *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
-                break;
-            case '-':
-                *(result->data + index) = *(mat1->data + index) - *(mat2->data + index);
-                break;
-            case '~':
-                *(result->data + index) = -*(mat1->data + index);
-                break;
-            case '|':
-                *(result->data + index) = fabs(*(mat1->data + index));
-                break;
-            case 'I':
-                *(result->data + index) = ((index / mat1->cols) == (index % mat1->cols)) ? 1 : 0;
-                break;
-            case '=':
-                *(result->data + index) = *(mat1->data + index);
-                break;
-            default:
-                return RUNTIME_ERROR;
-                break;
-        }
-    }
-
-    return 0;
-}
-
-/*
- * Store the result of adding mat1 and mat2 to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- */
-int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* YOUR CODE HERE */
-    return mat_operator(result, mat1, mat2, '+');
-}
-
-/*
- * Store the result of subtracting mat2 from mat1 to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- */
-int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* YOUR CODE HERE */
-    return mat_operator(result, mat1, mat2, '-');
-}
-
-/*
- * Store the result of element-wise negating mat's entries to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- */
-int neg_matrix(matrix *result, matrix *mat) {
-    /* YOUR CODE HERE */
-    return mat_operator(result, mat, mat, '~');
-}
-
-/*
- * Store the result of taking the absolute value element-wise to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- */
-int abs_matrix(matrix *result, matrix *mat) {
-    /* YOUR CODE HERE */
-    return mat_operator(result, mat, mat, '|');
-}
-
-/*
- * Store the result of multiplying mat1 and mat2 to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- * Remember that matrix multiplication is not the same as multiplying individual
- * elements.
- */
-int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* YOUR CODE HERE */
-    int err_code;
-    double temp;
-
-    if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
-        result->rows != mat1->rows || result->cols != mat2->cols) {
-        return RUNTIME_ERROR;
-    } else if (mat1->cols != mat2->rows) {
-        return VALUE_ERROR;
-    }
-
-    if (1/*mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
-        mat1->rows % 2 != 0*/) {  // todo accomodate odd dims
-        for (int i = 0; i < result->rows; ++i) {
-            for (int k = 0; k < mat1->cols; ++k) {
-                temp = get(mat1, i, k);
-                for (int j = 0; j < result->cols; ++j) {
-                    set(result, i, j, get(result, i, j) + (temp * get(mat2, k, j)));
-                }
+        /* Tail Case */
+        for (index = threshold; index < dim; ++index) {
+            switch (operation) {
+                case '+':
+                    *(result->data + index) = *(mat1->data + index) + *(mat2->data + index);
+                    break;
+                case '-':
+                    *(result->data + index) = *(mat1->data + index) - *(mat2->data + index);
+                    break;
+                case '~':
+                    *(result->data + index) = -*(mat1->data + index);
+                    break;
+                case '|':
+                    *(result->data + index) = fabs(*(mat1->data + index));
+                    break;
+                case 'I':
+                    *(result->data + index) = ((index / mat1->cols) == (index % mat1->cols)) ? 1 : 0;
+                    break;
+                case '=':
+                    *(result->data + index) = *(mat1->data + index);
+                    break;
+                default:
+                    return RUNTIME_ERROR;
+                    break;
             }
         }
-    } else {
-        /* Strassen's Algorithm */
-        int half_dimension, err_code1, err_code2, err_code3, err_code4, err_code5, err_code6, err_code7;
-        matrix *a, *b, *c, *d;
-        matrix *e, *f, *g, *h;
-        matrix *fNh, *aPb, *cPd, *gNe, *aPd, *ePh, *bNd, *gPh, *aNc, *ePf;
-        matrix *p1, *p2, *p3, *p4, *p5, *p6, *p7;
-        matrix *result00, *result01, *result10, *result11;
 
-        half_dimension = mat1->cols / 2;
-        err_code = 0;
-
-        err_code = err_code | allocator(&a, half_dimension, half_dimension, mat1, 0, 0, 1);
-        err_code = err_code | allocator(&b, half_dimension, half_dimension, mat1, 0, half_dimension, 1);
-        err_code = err_code | allocator(&c, half_dimension, half_dimension, mat1, half_dimension, 0, 1);
-        err_code = err_code | allocator(&d, half_dimension, half_dimension, mat1, half_dimension, half_dimension, 1);
-
-        err_code = err_code | allocator(&e, half_dimension, half_dimension, mat2, 0, 0, 1);
-        err_code = err_code | allocator(&f, half_dimension, half_dimension, mat2, 0, half_dimension, 1);
-        err_code = err_code | allocator(&g, half_dimension, half_dimension, mat2, half_dimension, 0, 1);
-        err_code = err_code | allocator(&h, half_dimension, half_dimension, mat2, half_dimension, half_dimension, 1);
-
-        err_code = err_code | allocate_matrix(&fNh, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&aPb, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&cPd, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&gNe, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&aPd, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&ePh, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&bNd, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&gPh, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&aNc, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&ePf, half_dimension, half_dimension);
-
-        err_code = err_code | allocate_matrix(&p1, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&p2, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&p3, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&p4, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&p5, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&p6, half_dimension, half_dimension);
-        err_code = err_code | allocate_matrix(&p7, half_dimension, half_dimension);
-
-        err_code = err_code | allocator(&result00, half_dimension, half_dimension, result, 0, 0, 1);
-        err_code = err_code | allocator(&result01, half_dimension, half_dimension, result, 0, half_dimension, 1);
-        err_code = err_code | allocator(&result10, half_dimension, half_dimension, result, half_dimension, 0, 1);
-        err_code = err_code | allocator(&result11, half_dimension, half_dimension, result, half_dimension, half_dimension, 1);
-
-        if (err_code) {
-            return err_code;
-        }
-
-        err_code = err_code | sub_matrix(fNh, f, h);
-        err_code = err_code | add_matrix(aPb, a, b);
-        err_code = err_code | add_matrix(cPd, c, d);
-        err_code = err_code | sub_matrix(gNe, g, e);
-        err_code = err_code | add_matrix(aPd, a, d);
-        err_code = err_code | add_matrix(ePh, f, h);
-        err_code = err_code | sub_matrix(bNd, b, d);
-        err_code = err_code | add_matrix(gPh, g, h);
-        err_code = err_code | sub_matrix(aNc, a, c);
-        err_code = err_code | add_matrix(ePf, e, f);
-
-        if (err_code) {
-            return err_code;
-        }
-
-#pragma omp parallel sections
-        {
-#pragma omp section
-            { err_code1 = mul_matrix(p1, a, fNh); }
-#pragma omp section
-            { err_code2 = mul_matrix(p2, aPb, h); }
-#pragma omp section
-            { err_code3 = mul_matrix(p3, cPd, e); }
-#pragma omp section
-            { err_code4 = mul_matrix(p4, d, gNe); }
-#pragma omp section
-            { err_code5 = mul_matrix(p5, aPd, ePh); }
-#pragma omp section
-            { err_code6 = mul_matrix(p6, bNd, gPh); }
-#pragma omp section
-            { err_code7 = mul_matrix(p7, aNc, ePf); }
-        }
-
-        if (err_code1 || err_code2 || err_code3 || err_code4 || err_code5 || err_code6 || err_code7) {
-            return DARK_ERROR;
-        }
-
-        err_code = err_code | add_matrix(result00, p5, p4);
-        err_code = err_code | sub_matrix(result00, result00, p2);
-        err_code = err_code | add_matrix(result00, result00, p6);
-
-        if (err_code) {
-            return err_code;
-        }
-
-        err_code = err_code | add_matrix(result01, p1, p2);
-        err_code = err_code | add_matrix(result10, p3, p4);
-
-        if (err_code) {
-            return err_code;
-        }
-
-        err_code = err_code | add_matrix(result11, p1, p5);
-        err_code = err_code | sub_matrix(result11, result11, p3);
-        err_code = err_code | sub_matrix(result11, result11, p7);
-
-        if (err_code) {
-            return err_code;
-        }
-
-        deallocate_matrix(a);
-        deallocate_matrix(b);
-        deallocate_matrix(c);
-        deallocate_matrix(d);
-
-        deallocate_matrix(e);
-        deallocate_matrix(f);
-        deallocate_matrix(g);
-        deallocate_matrix(h);
-
-        deallocate_matrix(fNh);
-        deallocate_matrix(aPb);
-        deallocate_matrix(cPd);
-        deallocate_matrix(gNe);
-        deallocate_matrix(aPd);
-        deallocate_matrix(ePh);
-        deallocate_matrix(bNd);
-        deallocate_matrix(gPh);
-        deallocate_matrix(aNc);
-        deallocate_matrix(ePf);
-
-        deallocate_matrix(p1);
-        deallocate_matrix(p2);
-        deallocate_matrix(p3);
-        deallocate_matrix(p4);
-        deallocate_matrix(p5);
-        deallocate_matrix(p6);
-        deallocate_matrix(p7);
-
-        deallocate_matrix(result00);
-        deallocate_matrix(result01);
-        deallocate_matrix(result10);
-        deallocate_matrix(result11);
+        return 0;
     }
 
-    return 0;
-}
-
-/*
- * Returns the largest power of two that is smaller than POW.
- */
-int calculate_largest_pow2(int number) {
-    if (number < 1) {
-        return DARK_ERROR;
+    /*
+     * Store the result of adding mat1 and mat2 to `result`.
+     * Return 0 upon success and a nonzero value upon failure.
+     */
+    int add_matrix(matrix * result, matrix * mat1, matrix * mat2) {
+        /* YOUR CODE HERE */
+        return mat_operator(result, mat1, mat2, '+');
     }
 
-    for (int pow_2 = 1; pow_2 < 8 * sizeof(unsigned int); ++pow_2) {
-        if ((1U << (unsigned int)pow_2) > number) {
-            return pow_2 - 1;
-        }
-    }
-    return -1;
-}
-
-/*
- * Calculates all powers of 2 matrices upto LARGEST_POW.
- */
-int calculate_pow2_matrices(matrix *mat, matrix ***pow_2_matrices, int largest_pow) {
-    int err_code;
-
-    if (largest_pow < 1) {
-        return VALUE_ERROR;
+    /*
+     * Store the result of subtracting mat2 from mat1 to `result`.
+     * Return 0 upon success and a nonzero value upon failure.
+     */
+    int sub_matrix(matrix * result, matrix * mat1, matrix * mat2) {
+        /* YOUR CODE HERE */
+        return mat_operator(result, mat1, mat2, '-');
     }
 
-    *pow_2_matrices = (matrix **)malloc(sizeof(matrix **) * (largest_pow + 1));
-    if (pow_2_matrices == NULL) {
-        return RUNTIME_ERROR;
+    /*
+     * Store the result of element-wise negating mat's entries to `result`.
+     * Return 0 upon success and a nonzero value upon failure.
+     */
+    int neg_matrix(matrix * result, matrix * mat) {
+        /* YOUR CODE HERE */
+        return mat_operator(result, mat, mat, '~');
     }
 
-    (*pow_2_matrices)[0] = mat;
-
-    for (int i = 1; i <= largest_pow; ++i) {
-        err_code = allocate_matrix((*pow_2_matrices + i), mat->rows, mat->cols);
-        if (err_code) {
-            return err_code;
-        }
+    /*
+     * Store the result of taking the absolute value element-wise to `result`.
+     * Return 0 upon success and a nonzero value upon failure.
+     */
+    int abs_matrix(matrix * result, matrix * mat) {
+        /* YOUR CODE HERE */
+        return mat_operator(result, mat, mat, '|');
     }
 
-    for (int i = 1; i <= largest_pow; ++i) {
-        err_code = mul_matrix(*(*pow_2_matrices + i), *(*pow_2_matrices + i - 1), *(*pow_2_matrices + i - 1));
-        if (err_code) {
-            return err_code;
-        }
-    }
-    return 0;
-}
+    /*
+     * Store the result of multiplying mat1 and mat2 to `result`.
+     * Return 0 upon success and a nonzero value upon failure.
+     * Remember that matrix multiplication is not the same as multiplying individual
+     * elements.
+     */
+    int mul_matrix(matrix * result, matrix * mat1, matrix * mat2) {
+        /* YOUR CODE HERE */
+        int err_code;
+        double temp;
 
-/*
- * Frees the power of 2 matrices and the array.
- */
-int deallocate_pow2_matrices(matrix **matrices, int len) {
-    if (matrices == NULL) {
-        return DARK_ERROR;
-    }
-
-    for (int i = 1; i < len; ++i) {
-        deallocate_matrix(matrices[i]);
-    }
-
-    free(matrices);
-
-    return 0;
-}
-
-/*
- * Store the result of raising mat to the (pow)th power to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- * Remember that pow is defined with matrix multiplication, not element-wise
- * multiplication.
- */
-int pow_matrix(matrix *result, matrix *mat, int pow) {
-    /* YOUR CODE HERE */
-    int err_code, largest_pow_2, remaining_power, curr_power;
-    matrix **pow_2_matrices, *temp_matrix = NULL;
-
-    if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
-        mat->cols != result->cols) {
-        return RUNTIME_ERROR;
-    } else if (pow < 0 || mat->rows != mat->cols) {
-        return VALUE_ERROR;
-    }
-
-    if (pow == 0) {
-        return mat_operator(result, mat, mat, 'I');
-    } else if (pow == 1) {
-        return mat_operator(result, mat, mat, '=');
-    } else {
-        /* Repeated Squaring */
-        largest_pow_2 = calculate_largest_pow2(pow);
-        if (largest_pow_2 == 0 || largest_pow_2 == -1) {
+        if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
+            result->rows != mat1->rows || result->cols != mat2->cols) {
+            return RUNTIME_ERROR;
+        } else if (mat1->cols != mat2->rows) {
             return VALUE_ERROR;
         }
 
-        err_code = calculate_pow2_matrices(mat, &pow_2_matrices, largest_pow_2);
-        if (err_code) {
-            return err_code;
-        }
+        if (1/*mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
+        mat1->rows % 2 != 0*/) {  // todo accomodate odd dims
+            for (int i = 0; i < result->rows; ++i) {
+                for (int k = 0; k < mat1->cols; ++k) {
+                    temp = get(mat1, i, k);
+                    for (int j = 0; j < result->cols; ++j) {
+                        set(result, i, j, get(result, i, j) + (temp * get(mat2, k, j)));
+                    }
+                }
+            }
+        } else {
+            /* Strassen's Algorithm */
+            int half_dimension, err_code1, err_code2, err_code3, err_code4, err_code5, err_code6, err_code7;
+            matrix *a, *b, *c, *d;
+            matrix *e, *f, *g, *h;
+            matrix *fNh, *aPb, *cPd, *gNe, *aPd, *ePh, *bNd, *gPh, *aNc, *ePf;
+            matrix *p1, *p2, *p3, *p4, *p5, *p6, *p7;
+            matrix *result00, *result01, *result10, *result11;
 
-        err_code = mat_operator(result, pow_2_matrices[largest_pow_2], pow_2_matrices[largest_pow_2], '=');
-        if (err_code) {
-            return err_code;
-        }
+            half_dimension = mat1->cols / 2;
+            err_code = 0;
 
-        remaining_power = pow - (1U << (size_t)largest_pow_2);
-        if (remaining_power > 0) {
-            allocate_matrix(&temp_matrix, mat->rows, mat->cols);
-        }
+            err_code = err_code | allocator(&a, half_dimension, half_dimension, mat1, 0, 0, 1);
+            err_code = err_code | allocator(&b, half_dimension, half_dimension, mat1, 0, half_dimension, 1);
+            err_code = err_code | allocator(&c, half_dimension, half_dimension, mat1, half_dimension, 0, 1);
+            err_code = err_code | allocator(&d, half_dimension, half_dimension, mat1, half_dimension, half_dimension, 1);
 
-        while (remaining_power > 0) {  // todo slight chance for parallelization
-            curr_power = calculate_largest_pow2(remaining_power);
-            err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
+            err_code = err_code | allocator(&e, half_dimension, half_dimension, mat2, 0, 0, 1);
+            err_code = err_code | allocator(&f, half_dimension, half_dimension, mat2, 0, half_dimension, 1);
+            err_code = err_code | allocator(&g, half_dimension, half_dimension, mat2, half_dimension, 0, 1);
+            err_code = err_code | allocator(&h, half_dimension, half_dimension, mat2, half_dimension, half_dimension, 1);
+
+            err_code = err_code | allocate_matrix(&fNh, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&aPb, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&cPd, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&gNe, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&aPd, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&ePh, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&bNd, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&gPh, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&aNc, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&ePf, half_dimension, half_dimension);
+
+            err_code = err_code | allocate_matrix(&p1, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&p2, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&p3, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&p4, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&p5, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&p6, half_dimension, half_dimension);
+            err_code = err_code | allocate_matrix(&p7, half_dimension, half_dimension);
+
+            err_code = err_code | allocator(&result00, half_dimension, half_dimension, result, 0, 0, 1);
+            err_code = err_code | allocator(&result01, half_dimension, half_dimension, result, 0, half_dimension, 1);
+            err_code = err_code | allocator(&result10, half_dimension, half_dimension, result, half_dimension, 0, 1);
+            err_code = err_code | allocator(&result11, half_dimension, half_dimension, result, half_dimension, half_dimension, 1);
+
             if (err_code) {
                 return err_code;
             }
 
-            err_code = mat_operator(result, temp_matrix, temp_matrix, '=');
+            err_code = err_code | sub_matrix(fNh, f, h);
+            err_code = err_code | add_matrix(aPb, a, b);
+            err_code = err_code | add_matrix(cPd, c, d);
+            err_code = err_code | sub_matrix(gNe, g, e);
+            err_code = err_code | add_matrix(aPd, a, d);
+            err_code = err_code | add_matrix(ePh, f, h);
+            err_code = err_code | sub_matrix(bNd, b, d);
+            err_code = err_code | add_matrix(gPh, g, h);
+            err_code = err_code | sub_matrix(aNc, a, c);
+            err_code = err_code | add_matrix(ePf, e, f);
+
             if (err_code) {
                 return err_code;
             }
 
-            remaining_power -= (1U << (size_t)curr_power);
+#pragma omp parallel sections
+            {
+#pragma omp section
+                { err_code1 = mul_matrix(p1, a, fNh); }
+#pragma omp section
+                { err_code2 = mul_matrix(p2, aPb, h); }
+#pragma omp section
+                { err_code3 = mul_matrix(p3, cPd, e); }
+#pragma omp section
+                { err_code4 = mul_matrix(p4, d, gNe); }
+#pragma omp section
+                { err_code5 = mul_matrix(p5, aPd, ePh); }
+#pragma omp section
+                { err_code6 = mul_matrix(p6, bNd, gPh); }
+#pragma omp section
+                { err_code7 = mul_matrix(p7, aNc, ePf); }
+            }
+
+            if (err_code1 || err_code2 || err_code3 || err_code4 || err_code5 || err_code6 || err_code7) {
+                return DARK_ERROR;
+            }
+
+            err_code = err_code | add_matrix(result00, p5, p4);
+            err_code = err_code | sub_matrix(result00, result00, p2);
+            err_code = err_code | add_matrix(result00, result00, p6);
+
+            if (err_code) {
+                return err_code;
+            }
+
+            err_code = err_code | add_matrix(result01, p1, p2);
+            err_code = err_code | add_matrix(result10, p3, p4);
+
+            if (err_code) {
+                return err_code;
+            }
+
+            err_code = err_code | add_matrix(result11, p1, p5);
+            err_code = err_code | sub_matrix(result11, result11, p3);
+            err_code = err_code | sub_matrix(result11, result11, p7);
+
+            if (err_code) {
+                return err_code;
+            }
+
+            deallocate_matrix(a);
+            deallocate_matrix(b);
+            deallocate_matrix(c);
+            deallocate_matrix(d);
+
+            deallocate_matrix(e);
+            deallocate_matrix(f);
+            deallocate_matrix(g);
+            deallocate_matrix(h);
+
+            deallocate_matrix(fNh);
+            deallocate_matrix(aPb);
+            deallocate_matrix(cPd);
+            deallocate_matrix(gNe);
+            deallocate_matrix(aPd);
+            deallocate_matrix(ePh);
+            deallocate_matrix(bNd);
+            deallocate_matrix(gPh);
+            deallocate_matrix(aNc);
+            deallocate_matrix(ePf);
+
+            deallocate_matrix(p1);
+            deallocate_matrix(p2);
+            deallocate_matrix(p3);
+            deallocate_matrix(p4);
+            deallocate_matrix(p5);
+            deallocate_matrix(p6);
+            deallocate_matrix(p7);
+
+            deallocate_matrix(result00);
+            deallocate_matrix(result01);
+            deallocate_matrix(result10);
+            deallocate_matrix(result11);
         }
 
-        deallocate_matrix(temp_matrix);
-        deallocate_pow2_matrices(pow_2_matrices, largest_pow_2 + 1);
+        return 0;
     }
 
-    return 0;
-}
+    /*
+     * Returns the largest power of two that is smaller than POW.
+     */
+    int calculate_largest_pow2(int number) {
+        if (number < 1) {
+            return DARK_ERROR;
+        }
+
+        for (int pow_2 = 1; pow_2 < 8 * sizeof(unsigned int); ++pow_2) {
+            if ((1U << (unsigned int)pow_2) > number) {
+                return pow_2 - 1;
+            }
+        }
+        return -1;
+    }
+
+    /*
+     * Calculates all powers of 2 matrices upto LARGEST_POW.
+     */
+    int calculate_pow2_matrices(matrix * mat, matrix * **pow_2_matrices, int largest_pow) {
+        int err_code;
+
+        if (largest_pow < 1) {
+            return VALUE_ERROR;
+        }
+
+        *pow_2_matrices = (matrix **)malloc(sizeof(matrix **) * (largest_pow + 1));
+        if (pow_2_matrices == NULL) {
+            return RUNTIME_ERROR;
+        }
+
+        (*pow_2_matrices)[0] = mat;
+
+        for (int i = 1; i <= largest_pow; ++i) {
+            err_code = allocate_matrix((*pow_2_matrices + i), mat->rows, mat->cols);
+            if (err_code) {
+                return err_code;
+            }
+        }
+
+        for (int i = 1; i <= largest_pow; ++i) {
+            err_code = mul_matrix(*(*pow_2_matrices + i), *(*pow_2_matrices + i - 1), *(*pow_2_matrices + i - 1));
+            if (err_code) {
+                return err_code;
+            }
+        }
+        return 0;
+    }
+
+    /*
+     * Frees the power of 2 matrices and the array.
+     */
+    int deallocate_pow2_matrices(matrix * *matrices, int len) {
+        if (matrices == NULL) {
+            return DARK_ERROR;
+        }
+
+        for (int i = 1; i < len; ++i) {
+            deallocate_matrix(matrices[i]);
+        }
+
+        free(matrices);
+
+        return 0;
+    }
+
+    /*
+     * Store the result of raising mat to the (pow)th power to `result`.
+     * Return 0 upon success and a nonzero value upon failure.
+     * Remember that pow is defined with matrix multiplication, not element-wise
+     * multiplication.
+     */
+    int pow_matrix(matrix * result, matrix * mat, int pow) {
+        /* YOUR CODE HERE */
+        int err_code, largest_pow_2, remaining_power, curr_power;
+        matrix **pow_2_matrices, *temp_matrix = NULL;
+
+        if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
+            mat->cols != result->cols) {
+            return RUNTIME_ERROR;
+        } else if (pow < 0 || mat->rows != mat->cols) {
+            return VALUE_ERROR;
+        }
+
+        if (pow == 0) {
+            return mat_operator(result, mat, mat, 'I');
+        } else if (pow == 1) {
+            return mat_operator(result, mat, mat, '=');
+        } else {
+            /* Repeated Squaring */
+            largest_pow_2 = calculate_largest_pow2(pow);
+            if (largest_pow_2 == 0 || largest_pow_2 == -1) {
+                return VALUE_ERROR;
+            }
+
+            err_code = calculate_pow2_matrices(mat, &pow_2_matrices, largest_pow_2);
+            if (err_code) {
+                return err_code;
+            }
+
+            err_code = mat_operator(result, pow_2_matrices[largest_pow_2], pow_2_matrices[largest_pow_2], '=');
+            if (err_code) {
+                return err_code;
+            }
+
+            remaining_power = pow - (1U << (size_t)largest_pow_2);
+            if (remaining_power > 0) {
+                allocate_matrix(&temp_matrix, mat->rows, mat->cols);
+            }
+
+            while (remaining_power > 0) {  // todo slight chance for parallelization
+                curr_power = calculate_largest_pow2(remaining_power);
+                err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
+                if (err_code) {
+                    return err_code;
+                }
+
+                err_code = mat_operator(result, temp_matrix, temp_matrix, '=');
+                if (err_code) {
+                    return err_code;
+                }
+
+                remaining_power -= (1U << (size_t)curr_power);
+            }
+
+            deallocate_matrix(temp_matrix);
+            deallocate_pow2_matrices(pow_2_matrices, largest_pow_2 + 1);
+        }
+
+        return 0;
+    }
