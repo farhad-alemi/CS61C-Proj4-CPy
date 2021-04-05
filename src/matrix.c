@@ -302,36 +302,26 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                     *(result->data + index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
                     *(result->data + index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
                     break;
-                case '=':
-                    *(result->data + index) = *(mat1->data + index);
-                    *(result->data + index + 1) = *(mat1->data + index + 1);
-                    *(result->data + index + 2) = *(mat1->data + index + 2);
-                    *(result->data + index + 3) = *(mat1->data + index + 3);
-                    *(result->data + index + 4) = *(mat1->data + index + 4);
-                    *(result->data + index + 5) = *(mat1->data + index + 5);
-                    *(result->data + index + 6) = *(mat1->data + index + 6);
-                    *(result->data + index + 7) = *(mat1->data + index + 7);
-                    break;
                 default:
                     break;
             }
         }
     } else {
-        __m256d arr[threshold];
 #pragma omp parallel
         {
+            __m256d arr[4];
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
                 switch (operation) {
                     case '+':
-                        arr[index] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
-                                                   _mm256_loadu_pd((const double *)(mat2->data + index)));
-                        arr[index + 1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
-                        arr[index + 2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
-                        arr[index + 3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
-                                                       _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
+                        arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index)));
+                        arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 4)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 4)));
+                        arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 8)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 8)));
+                        arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index + 12)),
+                                               _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
                         break;
                     case '-':
                         arr[0] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
@@ -344,56 +334,27 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                                                _mm256_loadu_pd((const double *)(mat2->data + index + 12)));
                         break;
                     case '~':
-                        _mm256_storeu_pd(
-                            result->data + index,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index))));
-
-                        _mm256_storeu_pd(
-                            result->data + index + 4,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
-
-                        _mm256_storeu_pd(
-                            result->data + index + 8,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 8))));
-
-                        _mm256_storeu_pd(
-                            result->data + index + 12,
-                            _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 12))));
+                        arr[0] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index)));
+                        arr[1] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
+                        arr[2] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
+                        arr[3] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
                         break;
                     case '|':
-                        _mm256_storeu_pd(
-                            result->data + index,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index))));
-
-                        _mm256_storeu_pd(
-                            result->data + index + 4,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4))));
-
-                        _mm256_storeu_pd(
-                            result->data + index + 8,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 8))));
-
-                        _mm256_storeu_pd(
-                            result->data + index + 12,
-                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 12))));
-                        break;
-                    case '=':
-                        _mm256_storeu_pd(result->data + index, _mm256_loadu_pd((const double *)(mat1->data + index)));
-                        _mm256_storeu_pd(result->data + index + 4, _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
-                        _mm256_storeu_pd(result->data + index + 8, _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
-                        _mm256_storeu_pd(result->data + index + 12, _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
+                        arr[0] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index)));
+                        arr[1] =
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 4)));
+                        arr[2] =
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 8)));
+                        arr[3] =
+                            _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat1->data + index + 12)));
                         break;
                     default:
                         break;
                 }
-                // _mm256_storeu_pd(result->data + index, arr[0]);
-                // _mm256_storeu_pd(result->data + index + 4, arr[1]);
-                // _mm256_storeu_pd(result->data + index + 8, arr[2]);
-                // _mm256_storeu_pd(result->data + index + 12, arr[3]);
-            }
-#pragma omp for
-            for (int i = 0; i < threshold; ++i) {
-                _mm256_storeu_pd(result->data + (i * 4), arr[i]);
+                _mm256_storeu_pd(result->data + index, arr[0]);
+                _mm256_storeu_pd(result->data + index + 4, arr[1]);
+                _mm256_storeu_pd(result->data + index + 8, arr[2]);
+                _mm256_storeu_pd(result->data + index + 12, arr[3]);
             }
         }
     }
@@ -415,9 +376,6 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                 break;
             case 'I':
                 *(result->data + index) = ((index / mat1->cols) == (index % mat1->cols)) ? 1 : 0;
-                break;
-            case '=':
-                *(result->data + index) = *(mat1->data + index);
                 break;
             default:
                 return RUNTIME_ERROR;
@@ -727,7 +685,8 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     if (pow == 0) {
         return mat_operator(result, mat, mat, 'I');
     } else if (pow == 1) {
-        return mat_operator(result, mat, mat, '=');
+        err_code = (int)memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
+        return ((!err_code) ? 0 : RUNTIME_ERROR);
     } else {
         /* Repeated Squaring */
         largest_pow_2 = calculate_largest_pow2(pow);
@@ -740,8 +699,8 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             return err_code;
         }
 
-        err_code = mat_operator(result, pow_2_matrices[largest_pow_2], pow_2_matrices[largest_pow_2], '=');
-        if (err_code) {
+        err_code = (int)memcpy(result->data, pow_2_matrices[largest_pow_2]->data, sizeof(double) * result->rows * result->cols);
+        if (err_code == 0) {
             return err_code;
         }
 
@@ -757,8 +716,8 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
                 return err_code;
             }
 
-            err_code = mat_operator(result, temp_matrix, temp_matrix, '=');
-            if (err_code) {
+            err_code = (int)memcpy(result->data, temp_matrix->data, sizeof(double) * result->rows * result->cols);
+            if (err_code == 0) {
                 return err_code;
             }
 
