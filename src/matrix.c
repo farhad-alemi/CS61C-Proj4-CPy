@@ -309,10 +309,10 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     } else {
 #pragma omp parallel
         {
+            omp_set_num_threads(64);
             __m256d arr[4];
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
-                omp_set_num_threads(64);
                 switch (operation) {
                     case '+':
                         arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1->data + index)),
