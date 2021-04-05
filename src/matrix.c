@@ -685,8 +685,8 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     if (pow == 0) {
         return mat_operator(result, mat, mat, 'I');
     } else if (pow == 1) {
-        err_code = (int)memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
-        return ((!err_code) ? 0 : RUNTIME_ERROR);
+        memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
+        return 0;
     } else {
         /* Repeated Squaring */
         largest_pow_2 = calculate_largest_pow2(pow);
@@ -699,11 +699,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             return err_code;
         }
 
-        err_code = (int)memcpy(result->data, pow_2_matrices[largest_pow_2]->data, sizeof(double) * result->rows * result->cols);
-        if (err_code == 0) {
-            return err_code;
-        }
-
+        memcpy(result->data, pow_2_matrices[largest_pow_2]->data, sizeof(double) * result->rows * result->cols);
         remaining_power = pow - (1U << (size_t)largest_pow_2);
         if (remaining_power > 0) {
             allocate_matrix(&temp_matrix, mat->rows, mat->cols);
@@ -716,11 +712,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
                 return err_code;
             }
 
-            err_code = (int)memcpy(result->data, temp_matrix->data, sizeof(double) * result->rows * result->cols);
-            if (err_code == 0) {
-                return err_code;
-            }
-
+            memcpy(result->data, temp_matrix->data, sizeof(double) * result->rows * result->cols);
             remaining_power -= (1U << (size_t)curr_power);
         }
 
