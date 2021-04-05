@@ -8,7 +8,7 @@ advise you to modify them and add new tests.
 - Hint: use dp_mc_matrix to generate dumbpy and numc matrices with the same data and use
         cmp_dp_nc_matrix to compare the results
 """
-
+t
 class TestAdd(TestCase):
     def test_small_add(self):
         # YOUR CODE HERE
