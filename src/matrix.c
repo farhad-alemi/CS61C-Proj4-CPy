@@ -402,23 +402,26 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     double *datar = result->data;
     int index;
 
-#pragma omp parallel for
-    __m256d arr[4];
+#pragma omp parallel
+    {
+        __m256d arr[4];
 
-    for (index = 0; index < threshold; index += STRIDE) {
-        arr[0] =
-            _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index)), _mm256_loadu_pd((const double *)(data2 + index)));
-        arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 4)),
-                               _mm256_loadu_pd((const double *)(data2 + index + 4)));
-        arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 8)),
-                               _mm256_loadu_pd((const double *)(data2 + index + 8)));
-        arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 12)),
-                               _mm256_loadu_pd((const double *)(data2 + index + 12)));
+#pragma omp for
+        for (index = 0; index < threshold; index += STRIDE) {
+            arr[0] =
+                _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index)), _mm256_loadu_pd((const double *)(data2 + index)));
+            arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 4)),
+                                   _mm256_loadu_pd((const double *)(data2 + index + 4)));
+            arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 8)),
+                                   _mm256_loadu_pd((const double *)(data2 + index + 8)));
+            arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 12)),
+                                   _mm256_loadu_pd((const double *)(data2 + index + 12)));
 
-        _mm256_storeu_pd(datar + index, arr[0]);
-        _mm256_storeu_pd(datar + index + 4, arr[1]);
-        _mm256_storeu_pd(datar + index + 8, arr[2]);
-        _mm256_storeu_pd(datar + index + 12, arr[3]);
+            _mm256_storeu_pd(datar + index, arr[0]);
+            _mm256_storeu_pd(datar + index + 4, arr[1]);
+            _mm256_storeu_pd(datar + index + 8, arr[2]);
+            _mm256_storeu_pd(datar + index + 12, arr[3]);
+        }
     }
 
     for (index = threshold; index < dim; ++index) {
