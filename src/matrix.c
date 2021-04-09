@@ -672,21 +672,15 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             return identity_retrieval;
         }
 
-        for (int i = 0; i < pow; ++i) {
-            int temp_creation = allocate_matrix(&temp_result, result->rows, result->cols);
-            if (temp_creation != 0) {
-                return temp_creation;
-            }
+        int temp_creation = allocate_matrix(&temp_result, result->rows, result->cols);
 
+        for (int i = 0; i < pow; ++i) {
             mul_retrieval = mul_matrix(temp_result, result, mat);
             if (mul_retrieval != 0) {
                 return mul_retrieval;
             }
 
             memcpy(result->data, temp_result->data, sizeof(double) * result->rows * result->cols);
-            if (temp != 0) {
-                return temp;
-            }
         }
         deallocate_matrix(temp_result);
         return mul_retrieval;
