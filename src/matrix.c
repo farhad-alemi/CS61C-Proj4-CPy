@@ -601,8 +601,55 @@ int deallocate_pow2_matrices(matrix **matrices, int len) {
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* YOUR CODE HERE */
-    int err_code, largest_pow_2, remaining_power, curr_power;
-    matrix **pow_2_matrices, *temp_matrix = NULL;
+    // int err_code, largest_pow_2, remaining_power, curr_power;
+    // matrix **pow_2_matrices, *temp_matrix = NULL;
+
+    // if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
+    //     mat->cols != result->cols) {
+    //     return RUNTIME_ERROR;
+    // } else if (pow < 0 || mat->rows != mat->cols) {
+    //     return VALUE_ERROR;
+    // }
+
+    // if (pow == 0) {
+    //     return mat_operator(result, mat, mat, 'I');
+    // } else if (pow == 1) {
+    //     memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
+    //     return 0;
+    // } else {
+    //     /* Repeated Squaring */
+    //     largest_pow_2 = calculate_largest_pow2(pow);
+    //     if (largest_pow_2 == 0 || largest_pow_2 == -1 || largest_pow_2 == DARK_ERROR) {
+    //         return VALUE_ERROR;
+    //     }
+
+    //     err_code = calculate_pow2_matrices(mat, &pow_2_matrices, largest_pow_2);
+    //     if (err_code) {
+    //         return err_code;
+    //     }
+
+    //     memcpy(result->data, pow_2_matrices[largest_pow_2]->data, sizeof(double) * result->rows * result->cols);
+    //     remaining_power = pow - (1U << (size_t)largest_pow_2);
+    //     if (remaining_power > 0) {
+    //         allocate_matrix(&temp_matrix, mat->rows, mat->cols);
+    //     }
+
+    //     while (remaining_power > 0) {  // todo slight chance for parallelization
+    //         curr_power = calculate_largest_pow2(remaining_power);
+    //         err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
+    //         if (err_code) {
+    //             return err_code;
+    //         }
+
+    //         memcpy(result->data, temp_matrix->data, sizeof(double) * result->rows * result->cols);
+    //         remaining_power -= (1U << (size_t)curr_power);
+    //     }
+
+    //     deallocate_matrix(temp_matrix);
+    //     deallocate_pow2_matrices(pow_2_matrices, largest_pow_2 + 1);
+    // }
+
+    // return 0;
 
     if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
         mat->cols != result->cols) {
@@ -617,37 +664,31 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
         return 0;
     } else {
-        /* Repeated Squaring */
-        largest_pow_2 = calculate_largest_pow2(pow);
-        if (largest_pow_2 == 0 || largest_pow_2 == -1 || largest_pow_2 == DARK_ERROR) {
-            return VALUE_ERROR;
+        int identity_retrieval, mul_retrieval, temp;
+        matrix *temp_result;
+
+        identity_retrieval = mat_operator(result, mat, mat, 'I');
+        if (identity_retrieval != 0) {
+            return identity_retrieval;
         }
 
-        err_code = calculate_pow2_matrices(mat, &pow_2_matrices, largest_pow_2);
-        if (err_code) {
-            return err_code;
-        }
-
-        memcpy(result->data, pow_2_matrices[largest_pow_2]->data, sizeof(double) * result->rows * result->cols);
-        remaining_power = pow - (1U << (size_t)largest_pow_2);
-        if (remaining_power > 0) {
-            allocate_matrix(&temp_matrix, mat->rows, mat->cols);
-        }
-
-        while (remaining_power > 0) {  // todo slight chance for parallelization
-            curr_power = calculate_largest_pow2(remaining_power);
-            err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
-            if (err_code) {
-                return err_code;
+        for (int i = 0; i < pow; ++i) {
+            int temp_creation = allocate_matrix(&temp_result, result->rows, result->cols);
+            if (temp_creation != 0) {
+                return temp_creation;
             }
 
-            memcpy(result->data, temp_matrix->data, sizeof(double) * result->rows * result->cols);
-            remaining_power -= (1U << (size_t)curr_power);
+            mul_retrieval = mul_matrix(temp_result, result, mat);
+            if (mul_retrieval != 0) {
+                return mul_retrieval;
+            }
+
+            memcpy(result->data, temp->data, sizeof(double) * result->rows * result->cols);
+            if (temp != 0) {
+                return temp;
+            }
         }
-
-        deallocate_matrix(temp_matrix);
-        deallocate_pow2_matrices(pow_2_matrices, largest_pow_2 + 1);
+        deallocate_matrix(temp_result);
+        return mul_retrieval;
     }
-
-    return 0;
 }
