@@ -236,7 +236,7 @@ void fill_matrix(matrix *mat, double val) {
  * Sacrifices abstraction for the sake of performance!
  */
 int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
-    int dim, index, threshold, small_stride;
+    int dim, threshold, small_stride;
     double *mat1_data, *mat2_data, *result_data, *mat1_data_index, *mat2_data_index, *result_data_index;
 
     mat1_data = mat1->data;
@@ -378,7 +378,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     }
 
     /* Tail Case */
-    for (index = threshold; index < dim; ++index) {
+    for (int index = threshold; index < dim; ++index) {
         mat1_data_index = mat1_data + index;
         result_data_index = result_data + index;
         switch (operation) {
@@ -418,7 +418,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
     // return mat_operator(result, mat1, mat2, '+');
     double *mat1_data, *mat2_data, *result_data, *mat1_data_index, *mat2_data_index, *result_data_index;
-    int dim, threshold, index;
+    int dim, threshold;
 
     dim = result->rows * result->cols;
     threshold = dim / STRIDE * STRIDE;
@@ -431,7 +431,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         __m256d arr[4];
 
 #pragma omp for
-        for (index = 0; index < threshold; index += STRIDE) {
+        for (int index = 0; index < threshold; index += STRIDE) {
             mat1_data_index = mat1_data + index;
             mat2_data_index = mat2_data + index;
             result_data_index = result_data + index;
@@ -452,7 +452,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         }
     }
 
-    for (index = threshold; index < dim; ++index) {
+    for (int index = threshold; index < dim; ++index) {
         *(result_data + index) = *(mat1_data + index) + *(mat2_data + index);
     }
     return 0;
