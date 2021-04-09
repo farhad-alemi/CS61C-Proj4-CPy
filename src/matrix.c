@@ -326,8 +326,13 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             __m256d arr[4];
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
+                mat1_data_index = mat1_data + index;
+                result_data_index = result_data + index;
+
                 switch (operation) {
                     case '+':
+                        mat2_data_index = mat2_data + index;
+
                         arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index)),
                                                _mm256_loadu_pd((const double *)(mat2_data_index)));
                         arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
@@ -338,6 +343,8 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                                                _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
                         break;
                     case '-':
+                        mat2_data_index = mat2_data + index;
+
                         arr[0] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1_data_index)),
                                                _mm256_loadu_pd((const double *)(mat2_data_index)));
                         arr[1] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
@@ -425,6 +432,10 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
 #pragma omp for
         for (index = 0; index < threshold; index += STRIDE) {
+            mat1_data_index = mat1_data + index;
+            mat2_data_index = mat2_data + index;
+            result_data_index = result_data + index;
+
             arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index)),
                                    _mm256_loadu_pd((const double *)(mat2_data_index)));
             arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
