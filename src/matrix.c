@@ -237,7 +237,7 @@ void fill_matrix(matrix *mat, double val) {
  */
 int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     int dim, threshold, small_stride;
-    double *mat1_data, *mat2_data, *result_data, *mat1_data_index, *mat2_data_index, *result_data_index;
+    double *mat1_data, *mat2_data, *result_data;
 
     mat1_data = mat1->data;
     mat2_data = mat2->data;
@@ -255,74 +255,80 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
 
     if (operation == 'I' || dim < DIMENSION_THRESHOLD) {
         small_stride = STRIDE / 2;
-#pragma omp parallel for
-        for (int index = 0; index < threshold; index += small_stride) {
-            mat1_data_index = mat1_data + index;
-            result_data_index = result_data + index;
+#pragma omp parallel
+        {
+            double *mat1_data_index = NULL, *mat2_data_index = NULL, *result_data_index = NULL;
 
-            switch (operation) {
-                case '+':
-                    mat2_data_index = mat2_data + index;
+#pragma omp for
+            for (int index = 0; index < threshold; index += small_stride) {
+                mat1_data_index = mat1_data + index;
+                result_data_index = result_data + index;
 
-                    *(result_data_index) = *(mat1_data_index) + *(mat2_data_index);
-                    *(result_data_index + 1) = *(mat1_data_index + 1) + *(mat2_data_index + 1);
-                    *(result_data_index + 2) = *(mat1_data_index + 2) + *(mat2_data_index + 2);
-                    *(result_data_index + 3) = *(mat1_data_index + 3) + *(mat2_data_index + 3);
-                    *(result_data_index + 4) = *(mat1_data_index + 4) + *(mat2_data_index + 4);
-                    *(result_data_index + 5) = *(mat1_data_index + 5) + *(mat2_data_index + 5);
-                    *(result_data_index + 6) = *(mat1_data_index + 6) + *(mat2_data_index + 6);
-                    *(result_data_index + 7) = *(mat1_data_index + 7) + *(mat2_data_index + 7);
-                    break;
-                case '-':
-                    mat2_data_index = mat2_data + index;
+                switch (operation) {
+                    case '+':
+                        mat2_data_index = mat2_data + index;
 
-                    *(result_data_index) = *(mat1_data_index) - *(mat2_data_index);
-                    *(result_data_index + 1) = *(mat1_data_index + 1) - *(mat2_data_index + 1);
-                    *(result_data_index + 2) = *(mat1_data_index + 2) - *(mat2_data_index + 2);
-                    *(result_data_index + 3) = *(mat1_data_index + 3) - *(mat2_data_index + 3);
-                    *(result_data_index + 4) = *(mat1_data_index + 4) - *(mat2_data_index + 4);
-                    *(result_data_index + 5) = *(mat1_data_index + 5) - *(mat2_data_index + 5);
-                    *(result_data_index + 6) = *(mat1_data_index + 6) - *(mat2_data_index + 6);
-                    *(result_data_index + 7) = *(mat1_data_index + 7) - *(mat2_data_index + 7);
-                    break;
-                case '~':
-                    *(result_data_index) = -*(mat1_data_index);
-                    *(result_data_index + 1) = -*(mat1_data_index + 1);
-                    *(result_data_index + 2) = -*(mat1_data_index + 2);
-                    *(result_data_index + 3) = -*(mat1_data_index + 3);
-                    *(result_data_index + 4) = -*(mat1_data_index + 4);
-                    *(result_data_index + 5) = -*(mat1_data_index + 5);
-                    *(result_data_index + 6) = -*(mat1_data_index + 6);
-                    *(result_data_index + 7) = -*(mat1_data_index + 7);
-                    break;
-                case '|':
-                    *(result_data_index) = fabs(*(mat1_data_index));
-                    *(result_data_index + 1) = fabs(*(mat1_data_index + 1));
-                    *(result_data_index + 2) = fabs(*(mat1_data_index + 2));
-                    *(result_data_index + 3) = fabs(*(mat1_data_index + 3));
-                    *(result_data_index + 4) = fabs(*(mat1_data_index + 4));
-                    *(result_data_index + 5) = fabs(*(mat1_data_index + 5));
-                    *(result_data_index + 6) = fabs(*(mat1_data_index + 6));
-                    *(result_data_index + 7) = fabs(*(mat1_data_index + 7));
-                    break;
-                case 'I':
-                    *(result_data_index) = (((index) / mat1->cols) == ((index) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
-                    *(result_data_index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
-                    break;
-                default:
-                    break;
+                        *(result_data_index) = *(mat1_data_index) + *(mat2_data_index);
+                        *(result_data_index + 1) = *(mat1_data_index + 1) + *(mat2_data_index + 1);
+                        *(result_data_index + 2) = *(mat1_data_index + 2) + *(mat2_data_index + 2);
+                        *(result_data_index + 3) = *(mat1_data_index + 3) + *(mat2_data_index + 3);
+                        *(result_data_index + 4) = *(mat1_data_index + 4) + *(mat2_data_index + 4);
+                        *(result_data_index + 5) = *(mat1_data_index + 5) + *(mat2_data_index + 5);
+                        *(result_data_index + 6) = *(mat1_data_index + 6) + *(mat2_data_index + 6);
+                        *(result_data_index + 7) = *(mat1_data_index + 7) + *(mat2_data_index + 7);
+                        break;
+                    case '-':
+                        mat2_data_index = mat2_data + index;
+
+                        *(result_data_index) = *(mat1_data_index) - *(mat2_data_index);
+                        *(result_data_index + 1) = *(mat1_data_index + 1) - *(mat2_data_index + 1);
+                        *(result_data_index + 2) = *(mat1_data_index + 2) - *(mat2_data_index + 2);
+                        *(result_data_index + 3) = *(mat1_data_index + 3) - *(mat2_data_index + 3);
+                        *(result_data_index + 4) = *(mat1_data_index + 4) - *(mat2_data_index + 4);
+                        *(result_data_index + 5) = *(mat1_data_index + 5) - *(mat2_data_index + 5);
+                        *(result_data_index + 6) = *(mat1_data_index + 6) - *(mat2_data_index + 6);
+                        *(result_data_index + 7) = *(mat1_data_index + 7) - *(mat2_data_index + 7);
+                        break;
+                    case '~':
+                        *(result_data_index) = -*(mat1_data_index);
+                        *(result_data_index + 1) = -*(mat1_data_index + 1);
+                        *(result_data_index + 2) = -*(mat1_data_index + 2);
+                        *(result_data_index + 3) = -*(mat1_data_index + 3);
+                        *(result_data_index + 4) = -*(mat1_data_index + 4);
+                        *(result_data_index + 5) = -*(mat1_data_index + 5);
+                        *(result_data_index + 6) = -*(mat1_data_index + 6);
+                        *(result_data_index + 7) = -*(mat1_data_index + 7);
+                        break;
+                    case '|':
+                        *(result_data_index) = fabs(*(mat1_data_index));
+                        *(result_data_index + 1) = fabs(*(mat1_data_index + 1));
+                        *(result_data_index + 2) = fabs(*(mat1_data_index + 2));
+                        *(result_data_index + 3) = fabs(*(mat1_data_index + 3));
+                        *(result_data_index + 4) = fabs(*(mat1_data_index + 4));
+                        *(result_data_index + 5) = fabs(*(mat1_data_index + 5));
+                        *(result_data_index + 6) = fabs(*(mat1_data_index + 6));
+                        *(result_data_index + 7) = fabs(*(mat1_data_index + 7));
+                        break;
+                    case 'I':
+                        *(result_data_index) = (((index) / mat1->cols) == ((index) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 1) = (((index + 1) / mat1->cols) == ((index + 1) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 2) = (((index + 2) / mat1->cols) == ((index + 2) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 3) = (((index + 3) / mat1->cols) == ((index + 3) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 4) = (((index + 4) / mat1->cols) == ((index + 4) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 5) = (((index + 5) / mat1->cols) == ((index + 5) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 6) = (((index + 6) / mat1->cols) == ((index + 6) % mat1->cols)) ? 1 : 0;
+                        *(result_data_index + 7) = (((index + 7) / mat1->cols) == ((index + 7) % mat1->cols)) ? 1 : 0;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     } else {
-        omp_set_num_threads(8);
+        // omp_set_num_threads(8);
 #pragma omp parallel
         {
+            double *mat1_data_index = NULL, *mat2_data_index = NULL, *result_data_index = NULL;
             __m256d arr[4];
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
@@ -378,6 +384,8 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
     }
 
     /* Tail Case */
+    double *mat1_data_index = NULL, *mat2_data_index = NULL, *result_data_index = NULL;
+
     for (int index = threshold; index < dim; ++index) {
         mat1_data_index = mat1_data + index;
         result_data_index = result_data + index;
@@ -417,7 +425,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
     // return mat_operator(result, mat1, mat2, '+');
-    double *mat1_data, *mat2_data, *result_data, *mat1_data_index, *mat2_data_index, *result_data_index;
+    double *mat1_data, *mat2_data, *result_data;
     int dim, threshold;
 
     dim = result->rows * result->cols;
@@ -429,6 +437,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 #pragma omp parallel
     {
         __m256d arr[4];
+        double *mat1_data_index, *mat2_data_index, *result_data_index;
 
 #pragma omp for
         for (int index = 0; index < threshold; index += STRIDE) {
@@ -452,6 +461,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         }
     }
 
+    /* Tail Case. */
     for (int index = threshold; index < dim; ++index) {
         *(result_data + index) = *(mat1_data + index) + *(mat2_data + index);
     }
