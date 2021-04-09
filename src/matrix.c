@@ -662,7 +662,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         return mat_operator(result, mat, mat, 'I');
     } else if (pow == 1) {
         // return mat_operator(result, mat, mat, 's');
-        memcpy(result->data, mat->dat, mat->rows * mat->cols);
+        memcpy(result->data, mat->data, mat->rows * mat->cols);
         return 0;
     } else {
         int identity_retrieval, mul_retrieval;
