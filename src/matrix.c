@@ -662,7 +662,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         return mat_operator(result, mat, mat, 'I');
     } else if (pow == 1) {
         // return mat_operator(result, mat, mat, 's');
-        memcpy(result->data, mat->data, mat->rows * mat->cols);
+        memcpy(result->data, mat->data, mat->rows * mat->cols * sizeof(double));
         return 0;
     } else {
         int identity_retrieval, mul_retrieval;
@@ -685,7 +685,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             }
 
             // temp = mat_op_helper(result, temp_result, temp_result, 's');
-            memcpy(result->data, temp_result->data, mat->rows * mat->cols);
+            memcpy(result->data, temp_result->data, mat->rows * mat->cols * sizeof(double));
         }
         deallocate_matrix(temp_result);
         return mul_retrieval;
