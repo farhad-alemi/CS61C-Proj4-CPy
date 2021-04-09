@@ -211,14 +211,14 @@ class TestPow(TestCase):
 
     def test_large_pow_I(self):
         # YOUR CODE HERE
-        dp_mat, nc_mat = rand_dp_nc_matrix(1024, 1024, seed=0)
+        dp_mat, nc_mat = rand_dp_nc_matrix(107, 107, seed=0)
         is_correct, speed_up = compute([dp_mat, 0], [nc_mat, 0], "pow")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
     def test_large_pow_1(self):
         # YOUR CODE HERE
-        dp_mat, nc_mat = rand_dp_nc_matrix(1024, 1024, seed=0)
+        dp_mat, nc_mat = rand_dp_nc_matrix(107, 107, seed=0)
         is_correct, speed_up = compute([dp_mat, 1], [nc_mat, 1], "pow")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
