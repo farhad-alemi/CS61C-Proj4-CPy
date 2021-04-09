@@ -402,7 +402,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     double *datar = result->data;
     __m256d arr[4];
 
-#pragma omp parallel for {
+#pragma omp parallel for
     for (int index = 0; index < threshold; index += STRIDE) {
         arr[0] =
             _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index)), _mm256_loadu_pd((const double *)(data2 + index)));
@@ -418,12 +418,11 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         _mm256_storeu_pd(datar + index + 8, arr[2]);
         _mm256_storeu_pd(datar + index + 12, arr[3]);
     }
-}
 
-for (index = threshold; index < dim; ++index) {
-    *(datar + index) = *(data1 + index) + *(data2 + index);
-}
-return 0;
+    for (index = threshold; index < dim; ++index) {
+        *(datar + index) = *(data1 + index) + *(data2 + index);
+    }
+    return 0;
 }
 
 /*
