@@ -683,7 +683,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
                 return mul_retrieval;
             }
 
-            memcpy(result->data, temp->data, sizeof(double) * result->rows * result->cols);
+            memcpy(result->data, temp_result->data, sizeof(double) * result->rows * result->cols);
             if (temp != 0) {
                 return temp;
             }
