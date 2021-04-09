@@ -661,10 +661,11 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     if (pow == 0) {
         return mat_operator(result, mat, mat, 'I');
     } else if (pow == 1) {
-        memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
+        // return mat_operator(result, mat, mat, 's');
+        memcpy(result->data, mat->dat, mat->rows * mat->cols);
         return 0;
     } else {
-        int identity_retrieval, mul_retrieval, temp;
+        int identity_retrieval, mul_retrieval;
         matrix *temp_result;
 
         identity_retrieval = mat_operator(result, mat, mat, 'I');
@@ -672,15 +673,19 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             return identity_retrieval;
         }
 
-        int temp_creation = allocate_matrix(&temp_result, result->rows, result->cols);
-
         for (int i = 0; i < pow; ++i) {
+            int temp_creation = allocate_matrix(&temp_result, result->rows, result->cols);
+            if (temp_creation != 0) {
+                return temp_creation;
+            }
+
             mul_retrieval = mul_matrix(temp_result, result, mat);
             if (mul_retrieval != 0) {
                 return mul_retrieval;
             }
 
-            memcpy(result->data, temp_result->data, sizeof(double) * result->rows * result->cols);
+            // temp = mat_op_helper(result, temp_result, temp_result, 's');
+            memcpy(result->data, temp_result->data, mat->rows * mat->cols);
         }
         deallocate_matrix(temp_result);
         return mul_retrieval;
