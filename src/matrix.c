@@ -434,6 +434,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     mat2_data = mat2->data;
     result_data = result->data;
 
+    omp_set_num_threads(32);
 #pragma omp parallel
     {
         __m256d arr[4];
