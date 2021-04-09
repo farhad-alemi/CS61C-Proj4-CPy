@@ -307,9 +307,9 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     } else {
+        omp_set_num_threads(8);
 #pragma omp parallel
         {
-            omp_set_num_threads(8);
             __m256d arr[4];
 #pragma omp for
             for (int index = 0; index < threshold; index += STRIDE) {
@@ -393,7 +393,37 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
  */
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    return mat_operator(result, mat1, mat2, '+');
+    // return mat_operator(result, mat1, mat2, '+');
+
+    int dim = result->rows * result->cols;
+    int threshold = dim / STRIDE * STRIDE;
+    double *data1 = mat1->data;
+    double *data2 = mat2->data;
+    double *datar = result->data;
+    __m256d arr[4];
+
+#pragma omp parallel for {
+    for (int index = 0; index < threshold; index += STRIDE) {
+        arr[0] =
+            _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index)), _mm256_loadu_pd((const double *)(data2 + index)));
+        arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 4)),
+                               _mm256_loadu_pd((const double *)(data2 + index + 4)));
+        arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 8)),
+                               _mm256_loadu_pd((const double *)(data2 + index + 8)));
+        arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(data1 + index + 12)),
+                               _mm256_loadu_pd((const double *)(data2 + index + 12)));
+
+        _mm256_storeu_pd(datar + index, arr[0]);
+        _mm256_storeu_pd(datar + index + 4, arr[1]);
+        _mm256_storeu_pd(datar + index + 8, arr[2]);
+        _mm256_storeu_pd(datar + index + 12, arr[3]);
+    }
+}
+
+for (index = threshold; index < dim; ++index) {
+    *(datar + index) = *(data1 + index) + *(data2 + index);
+}
+return 0;
 }
 
 /*
