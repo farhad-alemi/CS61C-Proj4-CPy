@@ -1,3 +1,5 @@
+/* THIS FILE SACRIFICES MANY ABSTRACTION LEVELS FOR THE SAKE OF HIGHER PERFORMANCE SPEEDS! */
+
 #include "matrix.h"
 
 #include <omp.h>
@@ -637,8 +639,9 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    // int err_code;
-    double temp;
+    int err_code, mat2_rows, mat2_cols, mat2_T_cols, trans_threshold, result_threshold;
+    double *mat1_data, *mat2_data, *mat2_T_data *result_data;
+    matrix *mat2_T;
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
         result->rows != mat1->rows || result->cols != mat2->cols) {
@@ -647,17 +650,43 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         return VALUE_ERROR;
     }
 
-    // if (1/*mat1->cols <= DIMENSION_THRESHOLD || mat1->rows != mat1->cols || mat2->rows != mat2->cols ||
-    // mat1->rows % 2 != 0*/) {  // todo accomodate odd dims
-    for (int i = 0; i < result->rows; ++i) {
-        for (int k = 0; k < mat1->cols; ++k) {
-            temp = get(mat1, i, k);
-            for (int j = 0; j < result->cols; ++j) {
-                set(result, i, j, get(result, i, j) + (temp * get(mat2, k, j)));
+    /* This reduces the number of accesses to matrix fields. */
+    mat1_data = mat1->data;
+    mat2_data = mat2->data;
+    result_data = result->data;
+    mat2_rows = mat2->rows;
+    mat2_cols = mat2->cols;
+    trans_threshold = mat2_rows * mat2_cols;
+    result_threshold = result->rows * result->cols;
+
+    /* Calculating Transpose of a mat2. */
+    err_code = allocate_matrix(&mat2_T, mat2_cols, mat2_rows);
+    if (err_code) {
+        return err_code;
+    }
+
+    mat2_T_data = mat2_T->data;
+    mat2_T_cols = mat2_T->cols;
+    for (int i = 0; i < trans_threshold; ++i) {
+        *(mat2_T_data + (mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)) = *(mat2_data + index);
+    }
+
+#pragma omp parallel
+    {
+        double temp;
+#pragma omp for
+        for (int index = 0; index < result_threshold; ++index) {
+            for (temp = 0, int k = 0; k < mat1->cols; ++k) {
+                temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index / mat2_T_cols, k);
             }
+
+            result + index = temp;
         }
     }
-    return 0;
+}
+
+deallocate_matrix(mat2_T);
+return 0;
 }
 
 /*
