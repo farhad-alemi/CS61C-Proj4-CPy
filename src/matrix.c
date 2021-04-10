@@ -671,19 +671,19 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         *(mat2_T_data + (mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)) = *(mat2_data + index);
     }
 
-#pragma omp parallel
-    {
-        double temp;
-#pragma omp for
-        for (int index = 0; index < result_threshold; ++index) {
-            temp = 0;
-            for (int k = 0; k < mat1->cols; ++k) {
-                temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index / mat2_T_cols, k);
-            }
-
-            *(result_data + index) = temp;
+    // #pragma omp parallel
+    // {
+    double temp;
+    // #pragma omp for
+    for (int index = 0; index < result_threshold; ++index) {
+        temp = 0;
+        for (int k = 0; k < mat1->cols; ++k) {
+            temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index / mat2_T_cols, k);
         }
+
+        *(result_data + index) = temp;
     }
+    // }
 
     deallocate_matrix(mat2_T);
     return 0;
