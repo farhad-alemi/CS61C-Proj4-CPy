@@ -676,7 +676,8 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         double temp;
 #pragma omp for
         for (int index = 0; index < result_threshold; ++index) {
-            for (int k = 0, temp = 0; k < mat1->cols; ++k) {
+            temp = 0;
+            for (int k = 0; k < mat1->cols; ++k) {
                 temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index / mat2_T_cols, k);
             }
 
