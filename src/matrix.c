@@ -232,24 +232,33 @@ void fill_matrix(matrix *mat, double val) {
 }
 
 /*
- * Performs various matrix operations based on OPERATION.
- * Sacrifices abstraction for the sake of performance!
- */
-int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
-    int dim, threshold, small_stride;
-    double *mat1_data, *mat2_data, *result_data;
-
-    mat1_data = mat1->data;
-    mat2_data = mat2->data;
-    result_data = result->data;
-
-    if (result == NULL || mat1 == NULL || mat2 == NULL || result_data == NULL || mat1_data == NULL || mat2_data == NULL ||
+ * Validates the matrix and, if appropriate, returns the error. */
+int validate(matrix *result, matrix *mat1, matrix *mat2) {
+    if (result == NULL || mat1 == NULL || mat2 == NULL || result->data == NULL || mat1->data == NULL || mat2->data == NULL ||
         mat1->rows != result->rows || mat1->cols != result->cols) {
         return RUNTIME_ERROR;
     } else if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
         return VALUE_ERROR;
     }
 
+    return 0;
+}
+
+/*
+ * Performs various matrix operations based on OPERATION.
+ * Sacrifices abstraction for the sake of performance!
+ */
+int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
+    int dim, threshold, small_stride, err_code;
+    double *mat1_data, *mat2_data, *result_data;
+
+    err_code = validate(result, mat1, mat2);
+    if (err_code) {
+        return err_code;
+    }
+    mat1_data = mat1->data;
+    mat2_data = mat2->data;
+    result_data = result->data;
     dim = result->rows * result->cols;
     threshold = dim / STRIDE * STRIDE;
 
@@ -325,7 +334,6 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
             }
         }
     } else {
-        // omp_set_num_threads(8);
 #pragma omp parallel
         {
             double *mat1_data_index = NULL, *mat2_data_index = NULL, *result_data_index = NULL;
@@ -424,19 +432,22 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
  */
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    // return mat_operator(result, mat1, mat2, '+');
     double *mat1_data, *mat2_data, *result_data;
-    int dim, threshold;
+    int err_code, dim, threshold;
 
-    dim = result->rows * result->cols;
-    threshold = dim / STRIDE * STRIDE;
+    err_code = validate(result, mat1, mat2);
+    if (err_code) {
+        return err_code;
+    }
+
     mat1_data = mat1->data;
     mat2_data = mat2->data;
     result_data = result->data;
+    dim = result->rows * result->cols;
+    threshold = dim / STRIDE * STRIDE;
 
 #pragma omp parallel
     {
-        // omp_set_num_threads(64);
         __m256d arr[4];
         double *mat1_data_index, *mat2_data_index, *result_data_index;
 
@@ -475,7 +486,52 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    return mat_operator(result, mat1, mat2, '-');
+    double *mat1_data, *mat2_data, *result_data;
+    int err_code, dim, threshold;
+
+    err_code = validate(result, mat1, mat2);
+    if (err_code) {
+        return err_code;
+    }
+
+    mat1_data = mat1->data;
+    mat2_data = mat2->data;
+    result_data = result->data;
+    dim = result->rows * result->cols;
+    threshold = dim / STRIDE * STRIDE;
+
+#pragma omp parallel
+    {
+        __m256d arr[4];
+        double *mat1_data_index, *mat2_data_index, *result_data_index;
+
+#pragma omp for
+        for (int index = 0; index < threshold; index += STRIDE) {
+            mat1_data_index = mat1_data + index;
+            mat2_data_index = mat2_data + index;
+            result_data_index = result_data + index;
+
+            arr[0] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1_data_index)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index)));
+            arr[1] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 4)));
+            arr[2] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 8)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 8)));
+            arr[3] = _mm256_sub_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 12)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
+
+            _mm256_storeu_pd(result_data_index, arr[0]);
+            _mm256_storeu_pd(result_data_index + 4, arr[1]);
+            _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            _mm256_storeu_pd(result_data_index + 12, arr[3]);
+        }
+    }
+
+    /* Tail Case. */
+    for (int index = threshold; index < dim; ++index) {
+        *(result_data + index) = *(mat1_data + index) - *(mat2_data + index);
+    }
+    return 0;
 }
 
 /*
@@ -484,7 +540,46 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int neg_matrix(matrix *result, matrix *mat) {
     /* YOUR CODE HERE */
-    return mat_operator(result, mat, mat, '~');
+    double *mat_data, *result_data;
+    int err_code, dim, threshold;
+
+    err_code = validate(result, mat, mat);
+    if (err_code) {
+        return err_code;
+    }
+
+    mat_data = mat->data;
+    result_data = result->data;
+    dim = result->rows * result->cols;
+    threshold = dim / STRIDE * STRIDE;
+
+#pragma omp parallel
+    {
+        __m256d arr[4];
+        double *mat1_data_index, *result_data_index;
+
+#pragma omp for
+        for (int index = 0; index < threshold; index += STRIDE) {
+            mat_data_index = mat_data + index;
+            result_data_index = result_data + index;
+
+            arr[0] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index)));
+            arr[1] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 4)));
+            arr[2] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 8)));
+            arr[3] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 12)));
+
+            _mm256_storeu_pd(result_data_index, arr[0]);
+            _mm256_storeu_pd(result_data_index + 4, arr[1]);
+            _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            _mm256_storeu_pd(result_data_index + 12, arr[3]);
+        }
+    }
+
+    /* Tail Case. */
+    for (int index = threshold; index < dim; ++index) {
+        *(result_data_index) = -*(mat->data + index);
+    }
+    return 0;
 }
 
 /*
@@ -493,7 +588,46 @@ int neg_matrix(matrix *result, matrix *mat) {
  */
 int abs_matrix(matrix *result, matrix *mat) {
     /* YOUR CODE HERE */
-    return mat_operator(result, mat, mat, '|');
+    double *mat_data, *result_data;
+    int err_code, dim, threshold;
+
+    err_code = validate(result, mat, mat);
+    if (err_code) {
+        return err_code;
+    }
+
+    mat_data = mat->data;
+    result_data = result->data;
+    dim = result->rows * result->cols;
+    threshold = dim / STRIDE * STRIDE;
+
+#pragma omp parallel
+    {
+        __m256d arr[4];
+        double *mat_data_index, *result_data_index;
+
+#pragma omp for
+        for (int index = 0; index < threshold; index += STRIDE) {
+            mat_data_index = mat_data + index;
+            result_data_index = result_data + index;
+
+            arr[0] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat_data_index)));
+            arr[1] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat_data_index + 4)));
+            arr[2] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat_data_index + 8)));
+            arr[3] = _mm256_andnot_pd(_mm256_set1_pd(-0.0), _mm256_loadu_pd((const double *)(mat_data_index + 12)));
+
+            _mm256_storeu_pd(result_data_index, arr[0]);
+            _mm256_storeu_pd(result_data_index + 4, arr[1]);
+            _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            _mm256_storeu_pd(result_data_index + 12, arr[3]);
+        }
+    }
+
+    /* Tail Case. */
+    for (int index = threshold; index < dim; ++index) {
+        *(result_data_index) = fabs(*(mat->data + index));
+    }
+    return 0;
 }
 
 /*
