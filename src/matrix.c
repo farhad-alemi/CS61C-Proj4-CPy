@@ -638,7 +638,7 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code;
+    // int err_code;
     double temp;
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
