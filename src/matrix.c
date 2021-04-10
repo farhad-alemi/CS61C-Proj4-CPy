@@ -667,7 +667,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
     mat2_T_data = mat2_T->data;
     mat2_T_cols = mat2_T->cols;
-    for (int index = 0; i < trans_threshold; ++index) {
+    for (int index = 0; index < trans_threshold; ++index) {
         *(mat2_T_data + (mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)) = *(mat2_data + index);
     }
 
@@ -680,7 +680,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index / mat2_T_cols, k);
             }
 
-            *(result + index) = temp;
+            *(result_data + index) = temp;
         }
     }
 
