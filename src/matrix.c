@@ -450,7 +450,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     {
         __m256d arr[4];
         double *mat1_data_index, *mat2_data_index, *result_data_index;
-        omp_set_num_threads(100);
+        omp_set_num_threads(64);
 
 #pragma omp for
         for (int index = 0; index < threshold; index += STRIDE) {
