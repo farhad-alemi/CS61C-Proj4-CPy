@@ -556,7 +556,7 @@ int neg_matrix(matrix *result, matrix *mat) {
 #pragma omp parallel
     {
         __m256d arr[4];
-        double *mat1_data_index, *result_data_index;
+        double *mat_data_index, *result_data_index;
 
 #pragma omp for
         for (int index = 0; index < threshold; index += STRIDE) {
@@ -577,7 +577,7 @@ int neg_matrix(matrix *result, matrix *mat) {
 
     /* Tail Case. */
     for (int index = threshold; index < dim; ++index) {
-        *(result_data_index) = -*(mat->data + index);
+        *(result_data + index) = -*(mat_data + index);
     }
     return 0;
 }
@@ -625,7 +625,7 @@ int abs_matrix(matrix *result, matrix *mat) {
 
     /* Tail Case. */
     for (int index = threshold; index < dim; ++index) {
-        *(result_data_index) = fabs(*(mat->data + index));
+        *(result_data + index) = fabs(*(mat_data + index));
     }
     return 0;
 }
