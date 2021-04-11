@@ -448,9 +448,9 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     dim = result->rows * result->cols;
     threshold = dim / STRIDE * STRIDE;
 
+    omp_set_num_threads(threshold / 2);
 #pragma omp parallel
     {
-        omp_set_num_threads(16);
         __m256d arr[STRIDE / 4];
         double *mat1_data_index, *mat2_data_index, *result_data_index;
 #pragma omp for
