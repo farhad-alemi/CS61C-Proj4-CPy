@@ -450,7 +450,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
 #pragma omp parallel
     {
-        __m256d arr[4];
+        __m256d arr[STRIDE / 4];
         double *mat1_data_index, *mat2_data_index, *result_data_index;
 #pragma omp for
         for (int index = 0; index < threshold; index += STRIDE) {
@@ -462,15 +462,15 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                                    _mm256_loadu_pd((const double *)(mat2_data_index)));
             arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
                                    _mm256_loadu_pd((const double *)(mat2_data_index + 4)));
-            arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 8)),
-                                   _mm256_loadu_pd((const double *)(mat2_data_index + 8)));
-            arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 12)),
-                                   _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
+            // arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 8)),
+            //                        _mm256_loadu_pd((const double *)(mat2_data_index + 8)));
+            // arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 12)),
+            //                        _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
 
             _mm256_storeu_pd(result_data_index, arr[0]);
             _mm256_storeu_pd(result_data_index + 4, arr[1]);
-            _mm256_storeu_pd(result_data_index + 8, arr[2]);
-            _mm256_storeu_pd(result_data_index + 12, arr[3]);
+            // _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            // _mm256_storeu_pd(result_data_index + 12, arr[3]);
         }
     }
 
@@ -673,16 +673,31 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
     // #pragma omp parallel
     // {
-    double temp;
+    // double temp;
     // #pragma omp for
-    for (int index = 0; index < result_threshold; ++index) {
-        temp = 0;
-        for (int k = 0; k < mat1->cols; ++k) {
-            temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index % mat2_T_cols, k);
-        }
+    // for (int index = 0; index < result_threshold; ++index) {
+    //     temp = 0;
+    //     for (int k = 0; k < mat1->cols; ++k) {
+    //         temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index % mat2_T_cols, k);
+    //     }
 
-        *(result_data + index) = temp;
-    }
+    //     *(result_data + index) = temp;
+    // }
+    // // }
+    // int SM = (CLS / sizeof(double))
+
+    //     for (i = 0; i < N; i += SM) {
+    //     for (j = 0; j < N; j += SM) {
+    //         for (k = 0; k < N; k += SM) {
+    //             for (i2 = 0, rres = &res[i][j], rmul1 = &mul1[i][k]; i2 < SM; ++i2, rres += N, rmul1 += N) {
+    //                 for (k2 = 0, rmul2 = &mul2[k][j]; k2 < SM; ++k2, rmul2 += N) {
+    //                     for (j2 = 0; j2 < SM; ++j2) {
+    //                         rres[j2] += rmul1[k2] * rmul2[j2];
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
     // }
 
     deallocate_matrix(mat2_T);
