@@ -650,7 +650,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         return VALUE_ERROR;
     }
 
-    /* This reduces the number of accesses to matrix fields. */
+    /* Register Blocking - This reduces the number of accesses to matrix fields. */
     mat1_data = mat1->data;
     mat2_data = mat2->data;
     result_data = result->data;
@@ -664,37 +664,29 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     if (err_code) {
         return err_code;
     }
-
     mat2_T_data = mat2_T->data;
     mat2_T_cols = mat2_T->cols;
+
+    /* Calculating Transpose */  // todo can i optimize
     for (int index = 0; index < trans_threshold; ++index) {
         *(mat2_T_data + (mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)) = *(mat2_data + index);
     }
 
-    // #pragma omp parallel
-    // {
-    // double temp;
-    // #pragma omp for
-    // for (int index = 0; index < result_threshold; ++index) {
-    //     temp = 0;
-    //     for (int k = 0; k < mat1->cols; ++k) {
-    //         temp += get(mat1, index / mat1->cols, k) * get(mat2_T, index % mat2_T_cols, k);
-    //     }
+    // int i, j, k, kk, jj;
+    int en = CACHE_LINE_SIZE * (mat2_cols / CACHE_LINE_SIZE);
 
-    //     *(result_data + index) = temp;
-    // }
-    // // }
-    int SM = 64;
-
-    for (i = 0; i < N; i += SM) {
-        for (j = 0; j < N; j += SM) {
-            for (k = 0; k < N; k += SM) {
-                for (i2 = 0, rres = &res[i][j], rmul1 = &mul1[i][k]; i2 < SM; ++i2, rres += N, rmul1 += N) {
-                    for (k2 = 0, rmul2 = &mul2[k][j]; k2 < SM; ++k2, rmul2 += N) {
-                        for (j2 = 0; j2 < SM; ++j2) {
-                            rres[j2] += rmul1[k2] * rmul2[j2];
-                        }
+    for (int kk = 0; kk < en; kk += CACHE_LINE_SIZE) {
+        for (int jj = 0; jj < en; jj += CACHE_LINE_SIZE) {
+            for (int i = 0; i < mat2_cols; i++) {
+                for (int j = jj; j < jj + CACHE_LINE_SIZE; j++) {
+                    // double sum = C[i][j];
+                    // mat->data + (mat1_cols * i) + j
+                    double sum = result_data + (i * mat2_col) + j;
+                    for (k = kk; k < kk + CACHE_LINE_SIZE; k++) {
+                        // sum += A[i][k] * B[k][j];
+                        sum += *(mat1_data + (i * mat1_cols) + k) * *(mat2_T_data + (j * mat2_T_cols) + k);
                     }
+                    *(result_data + (i * mat2_rows) + j) = sum;
                 }
             }
         }
