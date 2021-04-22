@@ -9,12 +9,14 @@ advise you to modify them and add new tests.
         cmp_dp_nc_matrix to compare the results
 """
 
+
 class TestAdd(TestCase):
     def test_small_add(self):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(2, 2, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(2, 2, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -22,7 +24,8 @@ class TestAdd(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(2001, 47, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(2001, 47, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -30,7 +33,8 @@ class TestAdd(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(12000, 12000, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(12000, 12000, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -38,16 +42,19 @@ class TestAdd(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(12000, 12000, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(12000, 12000, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
+
 
 class TestSub(TestCase):
     def test_small_sub(self):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(2, 2, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(2, 2, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
         self.assertTrue(is_correct)
         try:
             nc.Matrix(3, 3) - nc.Matrix(2, 2)
@@ -61,16 +68,17 @@ class TestSub(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(3029, 1, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(3029, 1, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
-        
 
     def test_large_sub(self):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(15000, 15000, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(15000, 15000, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -78,10 +86,12 @@ class TestSub(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(12000, 12000, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(12000, 12000, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "sub")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
-        
+
+
 class TestAbs(TestCase):
     def test_small_abs(self):
         # YOUR CODE HERE
@@ -110,6 +120,7 @@ class TestAbs(TestCase):
         is_correct, speed_up = compute([dp_mat], [nc_mat], "abs")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
+
 
 class TestNeg(TestCase):
     def test_small_neg(self):
@@ -147,12 +158,14 @@ class TestNeg(TestCase):
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
+
 class TestMul(TestCase):
     def test_small_mul(self):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(2, 2, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(2, 2, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -160,7 +173,8 @@ class TestMul(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(1998, 247, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(247, 1262, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -168,7 +182,8 @@ class TestMul(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(2903, 303, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(303, 93, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
@@ -176,9 +191,11 @@ class TestMul(TestCase):
         # YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(1024, 1024, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(1024, 1024, seed=1)
-        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
+
 
 class TestPow(TestCase):
     def test_small_pow(self):
@@ -223,6 +240,7 @@ class TestPow(TestCase):
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
+
 class TestGet(TestCase):
     def test_get(self):
         # YOUR CODE HERE
@@ -230,8 +248,8 @@ class TestGet(TestCase):
         rand_row = np.random.randint(dp_mat.shape[0])
         rand_col = np.random.randint(dp_mat.shape[1])
         self.assertEqual(round(dp_mat.get(rand_row, rand_col), decimal_places),
-            round(nc_mat.get(rand_row, rand_col), decimal_places))
-    
+                         round(nc_mat.get(rand_row, rand_col), decimal_places))
+
     def test_large_get(self):
         # YOUR CODE HERE
         dp_mat, nc_mat = rand_dp_nc_matrix(5864, 10023, seed=0)
@@ -239,6 +257,7 @@ class TestGet(TestCase):
         rand_col = np.random.randint(dp_mat.shape[1])
         self.assertEqual(round(dp_mat[rand_row][rand_col], decimal_places),
                          round(nc_mat[rand_row][rand_col], decimal_places))
+
 
 class TestSet(TestCase):
     def test_set(self):
@@ -249,7 +268,6 @@ class TestSet(TestCase):
         dp_mat.set(rand_row, rand_col, 2)
         nc_mat.set(rand_row, rand_col, 2)
         self.assertTrue(cmp_dp_nc_matrix(dp_mat, nc_mat))
-        self.assertEqual(nc_mat.get(rand_row, rand_col), 2)
 
     def test_large_set(self):
         # YOUR CODE HERE
@@ -257,7 +275,8 @@ class TestSet(TestCase):
         rand_row = np.random.randint(dp_mat.shape[0])
         rand_col = np.random.randint(dp_mat.shape[1])
         self.assertEqual(round(dp_mat[rand_row][rand_col], decimal_places),
-                          round(nc_mat[rand_row][rand_col], decimal_places))
+                         round(nc_mat[rand_row][rand_col], decimal_places))
+
 
 class TestShape(TestCase):
     def test_shape(self):
@@ -269,6 +288,7 @@ class TestShape(TestCase):
         dp_mat, nc_mat = rand_dp_nc_matrix(1064, 1, seed=0)
         self.assertTrue(dp_mat.shape == nc_mat.shape)
 
+
 class TestIndexGet(TestCase):
     def test_index_get(self):
         # YOUR CODE HERE
@@ -276,7 +296,8 @@ class TestIndexGet(TestCase):
         rand_row = np.random.randint(dp_mat.shape[0])
         rand_col = np.random.randint(dp_mat.shape[1])
         self.assertEqual(round(dp_mat[rand_row][rand_col], decimal_places),
-            round(nc_mat[rand_row][rand_col], decimal_places))
+                         round(nc_mat[rand_row][rand_col], decimal_places))
+
 
 class TestIndexSet(TestCase):
     def test_set(self):
@@ -288,6 +309,7 @@ class TestIndexSet(TestCase):
         nc_mat[rand_row][rand_col] = 2
         self.assertTrue(cmp_dp_nc_matrix(dp_mat, nc_mat))
         self.assertEqual(nc_mat[rand_row][rand_col], 2)
+
 
 class TestSlice(TestCase):
     def test_slice(self):

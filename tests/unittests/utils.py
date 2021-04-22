@@ -6,7 +6,8 @@ Provided by CS 61C staff
 import dumbpy as dp
 import numc as nc
 import numpy as np
-import hashlib, struct
+import hashlib
+import struct
 from typing import Union, List
 import operator
 import time
@@ -27,33 +28,43 @@ func_mapping = {
 """
 Returns a dumbpy matrix and a numc matrix with the same data
 """
+
+
 def dp_nc_matrix(*args, **kwargs):
     if len(kwargs) > 0:
         return dp.Matrix(*args, **kwargs), nc.Matrix(*args, **kwargs)
     else:
         return dp.Matrix(*args), nc.Matrix(*args)
 
+
 """
 Returns a random dumbpy matrix and a random numc matrix with the same data
 seed, low, and high are optional
 """
-def rand_dp_nc_matrix(rows, cols, seed=0):
-    return dp.Matrix(rows, cols, rand=True, seed=seed), nc.Matrix(rows, cols, rand=True, seed=seed)
+
+
+def rand_dp_nc_matrix(rows, cols, low=0, high=1, seed=0):
+    return dp.Matrix(rows, cols, low=low, high=high, rand=True, seed=seed), nc.Matrix(rows, cols, low=low, high=high, rand=True, seed=seed)
 
 
 """
 Returns whether the given dumbpy matrix dp_mat is equal to the numc matrix nc_mat
 This function allows a reasonable margin of(floating point errors)
 """
+
+
 def cmp_dp_nc_matrix(dp_mat: dp.Matrix, nc_mat: nc.Matrix):
     return rand_md5(dp_mat) == rand_md5(nc_mat)
+
 
 """
 Test if numc returns the correct result given an operation and some matrices.
 If speed_up is set to True, returns the speedup as well
 """
+
+
 def compute(dp_mat_lst: List[Union[dp.Matrix, int]],
-    nc_mat_lst: List[Union[nc.Matrix, int]], op: str):
+            nc_mat_lst: List[Union[nc.Matrix, int]], op: str):
     f = func_mapping[op]
     nc_start, nc_end, dp_start, dp_end = None, None, None, None
     nc_result, dp_result = None, None
@@ -86,15 +97,21 @@ def compute(dp_mat_lst: List[Union[dp.Matrix, int]],
     is_correct = cmp_dp_nc_matrix(nc_result, dp_result)
     return is_correct, (dp_end - dp_start) / (nc_end - nc_start)
 
+
 """
 Print speedup
 """
+
+
 def print_speedup(speed_up):
     print("Speed up is:", speed_up)
+
 
 """
 Generate a md5 hash by sampling random elements in nc_mat
 """
+
+
 def rand_md5(mat: Union[dp.Matrix, nc.Matrix]):
     np.random.seed(1)
     m = hashlib.md5()
