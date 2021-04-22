@@ -681,10 +681,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 for (int j = jj; j < jj + CACHE_LINE_SIZE; j++) {
                     // double sum = C[i][j];
                     // mat->data + (mat1_cols * i) + j
-                    double sum = result_data + (i * mat2_cols) + j;
+                    double sum = *(result_data + (i * mat2_cols) + j);
                     for (int k = kk; k < kk + CACHE_LINE_SIZE; k++) {
                         // sum += A[i][k] * B[k][j];
-                        sum += *(mat1_data + (i * mat1_cols) + k) * *(mat2_T_data + (j * mat2_T_cols) + k);
+                        sum += *(mat1_data + (i * mat2_cols) + k) * *(mat2_T_data + (j * mat2_T_cols) + k);
                     }
                     *(result_data + (i * mat2_rows) + j) = sum;
                 }
