@@ -658,6 +658,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     result_rows = result->rows;
     result_cols = result->cols;
     result_data = result->data;
+    int thresh = mat1_cols / 4 * 4;
 
 #pragma omp parallel
     {
@@ -666,39 +667,32 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
             double *result_data_i_result_cols = result_data + (i * result_cols);
             double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
 
-            for (int k = 0; k < mat1_cols; ++k) {
+            for (int k = 0; k < thresh; k += 4) {
+                double mat1_data_i_mat1_cols_k0 = mat1_data_i_mat1_cols[k];
+                double mat1_data_i_mat1_cols_k1 = mat1_data_i_mat1_cols[k + 1];
+                double mat1_data_i_mat1_cols_k2 = mat1_data_i_mat1_cols[k + 2];
+                double mat1_data_i_mat1_cols_k3 = mat1_data_i_mat1_cols[k + 3];
+
+                double *mat2_data_k_mat2_cols0 = mat2_data + (k * mat2_cols);
+                double *mat2_data_k_mat2_cols1 = mat2_data + ((k + 1) * mat2_cols);
+                double *mat2_data_k_mat2_cols2 = mat2_data + ((k + 2) * mat2_cols);
+                double *mat2_data_k_mat2_cols3 = mat2_data + ((k + 3) * mat2_cols);
+
+                for (int j = 0; j < result_cols; j++) {
+                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k0 * mat2_data_k_mat2_cols0[j] +
+                                                    mat1_data_i_mat1_cols_k1 * mat2_data_k_mat2_cols1[j] +
+                                                    mat1_data_i_mat1_cols_k1 * mat2_data_k_mat2_cols2[j] +
+                                                    mat1_data_i_mat1_cols_k1 * mat2_data_k_mat2_cols3[j];
+                }
+            }
+            // tail case
+            for (int k = thresh; k < mat1_cols; k++) {
                 double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
                 double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
-                // omp_set_num_threads(16);
-                for (int j = 0; j < result_cols / 2; j++) {
-                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
-                    // result_data_i_result_cols[j + 1] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 1];
-                    // result_data_i_result_cols[j + 2] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 2];
-                    // result_data_i_result_cols[j + 3] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 3];
 
-                    // result_data_i_result_cols[j + 4] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 4];
-                    // result_data_i_result_cols[j + 5] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 5];
-                    // result_data_i_result_cols[j + 6] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 6];
-                    // result_data_i_result_cols[j + 7] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 7];
-
-                    // result_data_i_result_cols[j + 8] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 8];
-                    // result_data_i_result_cols[j + 9] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 9];
-                    // result_data_i_result_cols[j + 10] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 10];
-                    // result_data_i_result_cols[j + 11] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 11];
-
-                    // result_data_i_result_cols[j + 12] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 12];
-                    // result_data_i_result_cols[j + 13] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 13];
-                    // result_data_i_result_cols[j + 14] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 14];
-                    // result_data_i_result_cols[j + 15] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 15];
+                for (int j = 0; j < result_cols; j++) {
+                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j]
                 }
-
-                for (int j = result_cols / 2; j < result_cols; j++) {
-                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
-                }
-                /* Tail Case */
-                // for (int j = thresh; j < result_cols; ++j) {
-                //     result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
-                // }
             }
         }
     }
