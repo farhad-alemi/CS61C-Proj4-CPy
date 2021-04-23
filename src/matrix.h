@@ -5,7 +5,6 @@
 #define VALUE_ERROR -1
 #define STRIDE 8
 #define DIMENSION_THRESHOLD 128
-#define CACHE_LINE_SIZE 8  // todo
 
 typedef struct matrix {
     int rows;              /* number of rows */

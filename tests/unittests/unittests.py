@@ -189,8 +189,17 @@ class TestMul(TestCase):
 
     def test_large_mul_op(self):
         # YOUR CODE HERE
-        dp_mat1, nc_mat1 = rand_dp_nc_matrix(1024, 1024, seed=0)
-        dp_mat2, nc_mat2 = rand_dp_nc_matrix(1024, 1024, seed=1)
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(600, 600, seed=0)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(600, 600, seed=1)
+        is_correct, speed_up = compute(
+            [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        self.assertTrue(is_correct)
+        print_speedup(speed_up)
+
+    def test_large_mul_op(self):
+        # YOUR CODE HERE
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(1200, 1200, seed=0)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(1200, 1200, seed=1)
         is_correct, speed_up = compute(
             [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
