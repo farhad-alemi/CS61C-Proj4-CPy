@@ -640,7 +640,7 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code, mat1_cols, mat2_rows, mat2_cols, mat2_T_cols, result_rows, result_cols, trans_threshold, result_threshold;
+    int err_code, mat1_cols, mat2_rows, mat2_cols, mat2_T_cols, result_rows, result_cols, trans_threshold;
     double *mat1_data, *mat2_data, *mat2_T_data, *result_data;
     matrix *mat2_T;
 
@@ -654,14 +654,13 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* Register Blocking - This reduces the number of accesses to matrix fields. */
     mat1_cols = mat1->cols;
     mat1_data = mat1->data;
-    mat2_data = mat2->data;
-    result_data = result->data;
-    result_rows = result->rows;
-    result_cols = result->cols;
     mat2_rows = mat2->rows;
     mat2_cols = mat2->cols;
+    mat2_data = mat2->data;
+    result_rows = result->rows;
+    result_cols = result->cols;
+    result_data = result->data;
     trans_threshold = mat2_rows * mat2_cols;
-    result_threshold = result->rows * result->cols;
 
     /* Calculating Transpose of a mat2. */
     err_code = allocate_matrix(&mat2_T, mat2_cols, mat2_rows);
@@ -679,12 +678,17 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
 #pragma omp parallel for
     for (int i = 0; i < result_rows; ++i) {
+        double *result_data_i_result_cols = result_data + (i * result_cols);
+
         for (int j = 0; j < result_cols; ++j) {
             double temp = 0;
+            double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
+            double *mat2_T_data_j_mat2_T_cols = mat2_T_data + (j * mat2_T_cols);
+
             for (int k = 0; k < mat1_cols; ++k) {
-                temp += mat1_data[i * mat1_cols + k] * mat2_T_data[j * mat2_T_cols + k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
             }
-            result_data[i * result_cols + j] = temp;
+            result_data_i_result_cols[j] = temp;
         }
     }
 
