@@ -681,8 +681,8 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 for (int j = 0; j < result_cols; j++) {
                     result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k0 * mat2_data_k_mat2_cols0[j] +
                                                     mat1_data_i_mat1_cols_k1 * mat2_data_k_mat2_cols1[j] +
-                                                    mat1_data_i_mat1_cols_k1 * mat2_data_k_mat2_cols2[j] +
-                                                    mat1_data_i_mat1_cols_k1 * mat2_data_k_mat2_cols3[j];
+                                                    mat1_data_i_mat1_cols_k2 * mat2_data_k_mat2_cols2[j] +
+                                                    mat1_data_i_mat1_cols_k3 * mat2_data_k_mat2_cols3[j];
                 }
             }
             // tail case
@@ -691,7 +691,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
 
                 for (int j = 0; j < result_cols; j++) {
-                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j]
+                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
                 }
             }
         }
