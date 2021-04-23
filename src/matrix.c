@@ -659,12 +659,9 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     result_cols = result->cols;
     result_data = result->data;
 
-    int thresh = result_cols / 4 * 4;
 #pragma omp parallel
-
     {
 #pragma omp for
-
         for (int i = 0; i < result_rows; ++i) {
             double *result_data_i_result_cols = result_data + (i * result_cols);
             double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
@@ -672,7 +669,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
             for (int k = 0; k < mat1_cols; ++k) {
                 double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
                 double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
-
+#pragma omp parallel for
                 for (int j = 0; j < result_cols; j++) {
                     result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
                     // result_data_i_result_cols[j + 1] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 1];
