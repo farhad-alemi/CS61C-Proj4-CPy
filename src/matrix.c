@@ -659,7 +659,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     result_cols = result->cols;
     result_data = result->data;
     thresh_k = mat1_cols / 8 * 8;
-    thresh_j = result_cols / 8 * 8;
+    thresh_j = result_cols / 4 * 4;
 #pragma omp parallel
     {
         __m256d arr[2];
@@ -687,7 +687,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 __m256d mat1_data_i_mat1_cols_k6 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 6]);
                 __m256d mat1_data_i_mat1_cols_k7 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 7]);
 
-                for (int j = 0; j < thresh_j; j += 8) {
+                for (int j = 0; j < thresh_j; j += 4) {
                     double *mat2_data_k_mat2_cols_j0 = mat2_data_k_mat2_cols0 + j;
                     double *mat2_data_k_mat2_cols_j1 = mat2_data_k_mat2_cols1 + j;
                     double *mat2_data_k_mat2_cols_j2 = mat2_data_k_mat2_cols2 + j;
@@ -716,23 +716,23 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                                                                             _mm256_loadu_pd(mat2_data_k_mat2_cols_j0),
                                                                             _mm256_loadu_pd(result_data_i_result_cols_j)))))))));
 
-                    arr[1] = _mm256_fmadd_pd(
-                        mat1_data_i_mat1_cols_k7, _mm256_loadu_pd(mat2_data_k_mat2_cols_j7 + 4),
-                        _mm256_fmadd_pd(
-                            mat1_data_i_mat1_cols_k6, _mm256_loadu_pd(mat2_data_k_mat2_cols_j6 + 4),
-                            _mm256_fmadd_pd(
-                                mat1_data_i_mat1_cols_k5, _mm256_loadu_pd(mat2_data_k_mat2_cols_j5 + 4),
-                                _mm256_fmadd_pd(
-                                    mat1_data_i_mat1_cols_k4, _mm256_loadu_pd(mat2_data_k_mat2_cols_j4 + 4),
-                                    _mm256_fmadd_pd(
-                                        mat1_data_i_mat1_cols_k3, _mm256_loadu_pd(mat2_data_k_mat2_cols_j3 + 4),
-                                        _mm256_fmadd_pd(
-                                            mat1_data_i_mat1_cols_k2, _mm256_loadu_pd(mat2_data_k_mat2_cols_j2 + 4),
-                                            _mm256_fmadd_pd(
-                                                mat1_data_i_mat1_cols_k1, _mm256_loadu_pd(mat2_data_k_mat2_cols_j1 + 4),
-                                                _mm256_fmadd_pd(mat1_data_i_mat1_cols_k0,
-                                                                _mm256_loadu_pd(mat2_data_k_mat2_cols_j0 + 4),
-                                                                _mm256_loadu_pd(result_data_i_result_cols_j + 4)))))))));
+                    // arr[1] = _mm256_fmadd_pd(
+                    //     mat1_data_i_mat1_cols_k7, _mm256_loadu_pd(mat2_data_k_mat2_cols_j7 + 4),
+                    //     _mm256_fmadd_pd(
+                    //         mat1_data_i_mat1_cols_k6, _mm256_loadu_pd(mat2_data_k_mat2_cols_j6 + 4),
+                    //         _mm256_fmadd_pd(
+                    //             mat1_data_i_mat1_cols_k5, _mm256_loadu_pd(mat2_data_k_mat2_cols_j5 + 4),
+                    //             _mm256_fmadd_pd(
+                    //                 mat1_data_i_mat1_cols_k4, _mm256_loadu_pd(mat2_data_k_mat2_cols_j4 + 4),
+                    //                 _mm256_fmadd_pd(
+                    //                     mat1_data_i_mat1_cols_k3, _mm256_loadu_pd(mat2_data_k_mat2_cols_j3 + 4),
+                    //                     _mm256_fmadd_pd(
+                    //                         mat1_data_i_mat1_cols_k2, _mm256_loadu_pd(mat2_data_k_mat2_cols_j2 + 4),
+                    //                         _mm256_fmadd_pd(
+                    //                             mat1_data_i_mat1_cols_k1, _mm256_loadu_pd(mat2_data_k_mat2_cols_j1 + 4),
+                    //                             _mm256_fmadd_pd(mat1_data_i_mat1_cols_k0,
+                    //                                             _mm256_loadu_pd(mat2_data_k_mat2_cols_j0 + 4),
+                    //                                             _mm256_loadu_pd(result_data_i_result_cols_j + 4)))))))));
 
                     // arr[2] = _mm256_fmadd_pd(
                     //     mat1_data_i_mat1_cols_k7, _mm256_loadu_pd(mat2_data_k_mat2_cols_j7 + 8),
@@ -772,7 +772,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
                     /* Storing the Results */
                     _mm256_storeu_pd(result_data_i_result_cols_j, arr[0]);
-                    _mm256_storeu_pd(result_data_i_result_cols_j + 4, arr[1]);
+                    // _mm256_storeu_pd(result_data_i_result_cols_j + 4, arr[1]);
                     // _mm256_storeu_pd(result_data_i_result_cols_j + 8, arr[2]);
                     // _mm256_storeu_pd(result_data_i_result_cols_j + 12, arr[3]);
                 }
