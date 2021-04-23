@@ -659,7 +659,6 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     result_cols = result->cols;
     result_data = result->data;
 
-// if smaller than 16 todo
 #pragma omp parallel
     {
         __m256d arr[4];
@@ -670,10 +669,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
             double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
 
             for (int k = 0; k < mat1_cols; ++k) {
-                double *mat1_data_i_mat1_cols_k_ptr = mat1_data_i_mat1_cols + k;
+                double mat1_data_i_mat1_cols_k_val = mat1_data_i_mat1_cols[k];
                 double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
 
-                __m256d mat1_data_i_mat1_cols_k = _mm256_set1_pd(mat1_data_i_mat1_cols_k_ptr);
+                __m256d mat1_data_i_mat1_cols_k = _mm256_set1_pd(mat1_data_i_mat1_cols_k_val);
 
                 for (int j = 0; j < result_cols / 16 * 16; j += 16) {
                     double *mat2_data_k_mat2_cols_j = mat2_data_k_mat2_cols + j;
@@ -700,7 +699,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
                 /* Tail Case */
                 for (int j = result_cols / 16 * 16; j < result_cols; ++j) {
-                    result_data_i_result_cols[j] += (*mat1_data_i_mat1_cols_k_ptr) * mat2_data_k_mat2_cols[j];
+                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k_val * mat2_data_k_mat2_cols[j];
                 }
             }
         }
