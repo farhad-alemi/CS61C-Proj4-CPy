@@ -450,7 +450,7 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
 #pragma omp parallel
     {
-        __m256d arr[STRIDE / 4];
+        __m256d arr[4];
         double *mat1_data_index, *mat2_data_index, *result_data_index;
 #pragma omp for
         for (int index = 0; index < threshold; index += STRIDE) {
@@ -462,15 +462,15 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                                    _mm256_loadu_pd((const double *)(mat2_data_index)));
             arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
                                    _mm256_loadu_pd((const double *)(mat2_data_index + 4)));
-            // arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 8)),
-            //                        _mm256_loadu_pd((const double *)(mat2_data_index + 8)));
-            // arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 12)),
-            //                        _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
+            arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 8)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 8)));
+            arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 12)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
 
             _mm256_storeu_pd(result_data_index, arr[0]);
             _mm256_storeu_pd(result_data_index + 4, arr[1]);
-            // _mm256_storeu_pd(result_data_index + 8, arr[2]);
-            // _mm256_storeu_pd(result_data_index + 12, arr[3]);
+            _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            _mm256_storeu_pd(result_data_index + 12, arr[3]);
         }
     }
 
@@ -541,56 +541,47 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int neg_matrix(matrix *result, matrix *mat) {
     /* YOUR CODE HERE */
+
     double *mat_data, *result_data;
+    int err_code, dim, threshold;
+
+    err_code = validate(result, mat, mat);
+    if (err_code) {
+        return err_code;
+    }
+
     mat_data = mat->data;
     result_data = result->data;
-    int dim = result->rows * result->cols;
+    dim = result->rows * result->cols;
+    threshold = dim / STRIDE * STRIDE;
 
-    for (int index = 0; index < dim; ++index) {
+#pragma omp parallel
+    {
+        __m256d arr[4];
+        double *mat_data_index, *result_data_index;
+
+#pragma omp for
+        for (int index = 0; index < threshold; index += STRIDE) {
+            mat_data_index = mat_data + index;
+            result_data_index = result_data + index;
+
+            arr[0] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index)));
+            arr[1] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 4)));
+            arr[2] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 8)));
+            arr[3] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 12)));
+
+            _mm256_storeu_pd(result_data_index, arr[0]);
+            _mm256_storeu_pd(result_data_index + 4, arr[1]);
+            _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            _mm256_storeu_pd(result_data_index + 12, arr[3]);
+        }
+    }
+
+    /* Tail Case. */
+    for (int index = threshold; index < dim; ++index) {
         *(result_data + index) = -*(mat_data + index);
     }
     return 0;
-    // return mat_operator(result, mat, mat, '~');
-    //     double *mat_data, *result_data;
-    //     int err_code, dim, threshold;
-
-    //     err_code = validate(result, mat, mat);
-    //     if (err_code) {
-    //         return err_code;
-    //     }
-
-    //     mat_data = mat->data;
-    //     result_data = result->data;
-    //     dim = result->rows * result->cols;
-    //     threshold = dim / STRIDE * STRIDE;
-
-    // #pragma omp parallel
-    //     {
-    //         __m256d arr[4];
-    //         double *mat_data_index, *result_data_index;
-
-    // #pragma omp for
-    //         for (int index = 0; index < threshold; index += STRIDE) {
-    //             mat_data_index = mat_data + index;
-    //             result_data_index = result_data + index;
-
-    //             arr[0] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index)));
-    //             arr[1] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 4)));
-    //             arr[2] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 8)));
-    //             arr[3] = _mm256_sub_pd(_mm256_setzero_pd(), _mm256_loadu_pd((const double *)(mat_data_index + 12)));
-
-    //             _mm256_storeu_pd(result_data_index, arr[0]);
-    //             _mm256_storeu_pd(result_data_index + 4, arr[1]);
-    //             _mm256_storeu_pd(result_data_index + 8, arr[2]);
-    //             _mm256_storeu_pd(result_data_index + 12, arr[3]);
-    //         }
-    //     }
-
-    //     /* Tail Case. */
-    //     for (int index = threshold; index < dim; ++index) {
-    //         *(result_data + index) = -*(mat_data + index);
-    //     }
-    //     return 0;
 }
 
 /*
