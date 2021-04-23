@@ -162,8 +162,8 @@ class TestNeg(TestCase):
 class TestMul(TestCase):
     def test_small_mul(self):
         # YOUR CODE HERE
-        dp_mat1, nc_mat1 = rand_dp_nc_matrix(1200, 7, seed=0)
-        dp_mat2, nc_mat2 = rand_dp_nc_matrix(7, 1200, seed=1)
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(1200, 1200, seed=0)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(1200, 15, seed=1)
         is_correct, speed_up = compute(
             [dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
