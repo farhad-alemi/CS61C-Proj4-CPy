@@ -541,7 +541,16 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int neg_matrix(matrix *result, matrix *mat) {
     /* YOUR CODE HERE */
-    return mat_operator(result, mat, mat, '~');
+    double *mat_data, *result_data;
+    mat_data = mat->data;
+    result_data = result->data;
+    int dim = result->rows * result->cols;
+
+    for (int index = 0; index < dim; ++index) {
+        *(result_data + index) = -*(mat_data + index);
+    }
+    return 0;
+    // return mat_operator(result, mat, mat, '~');
     //     double *mat_data, *result_data;
     //     int err_code, dim, threshold;
 
