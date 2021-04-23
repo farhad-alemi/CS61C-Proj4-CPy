@@ -639,7 +639,7 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code, mat2_rows, mat2_cols, mat2_T_cols, trans_threshold, result_threshold;
+    int err_code, mat1_cols, mat2_rows, mat2_cols, mat2_T_cols, result_rows, result_cols, trans_threshold, result_threshold;
     double *mat1_data, *mat2_data, *mat2_T_data, *result_data;
     matrix *mat2_T;
 
@@ -651,9 +651,12 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     }
 
     /* Register Blocking - This reduces the number of accesses to matrix fields. */
+    mat1_cols = mat1->cols;
     mat1_data = mat1->data;
     mat2_data = mat2->data;
     result_data = result->data;
+    result_rows = result->rows;
+    result_cols = result->cols;
     mat2_rows = mat2->rows;
     mat2_cols = mat2->cols;
     trans_threshold = mat2_rows * mat2_cols;
@@ -672,51 +675,15 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
         *(mat2_T_data + (mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)) = *(mat2_data + index);
     }
 
-    for (int x = 0; x < mat2_cols; x += CACHE_LINE_SIZE) {
-        for (int y = 0; y < mat2_cols; y += CACHE_LINE_SIZE) {
-            for (int i = x; i - x < CACHE_LINE_SIZE && i < mat2_cols; i++) {
-                for (int j = y; j - y < CACHE_LINE_SIZE && j < mat2_cols; j++) {
-                    double sum = *(result_data + (i * mat2_cols) + j);
-
-                    for (int k = i; k - i < CACHE_LINE_SIZE && k < mat2_cols; k++) {
-                        // C[i + j * n] += A[i + k * n] * B[k + j * n];
-                        sum += *(mat1_data + (i * mat2_cols) + k) * *(mat2_T_data + (j * mat2_T_cols) + k);
-                    }
-
-                    *(result_data + (i * mat2_rows) + j) = sum;
-                }
+    for (int i = 0; i < result_rows; ++i) {
+        for (int j = 0; j < result_cols; ++j) {
+            double temp = 0;
+            for (int k = 0; k < mat1->cols; ++k) {
+                temp += mat1_data[i * mat1_cols + k] * mat2_T[j * mat2_T_cols + k];
             }
+            result_data[i * result_col + j] = temp;
         }
     }
-
-    /*
-                for (int i = y; i - y < CACHE_LINE_SIZE && i < n; b++) {
-                    for (int j = x; j - x < CACHE_LINE_SIZE && j < n; a++) {
-                        dst[i * n + j] = src[j * n + i];
-                    }
-                }
-            }
-        }
-    */
-    // int i, j, k, kk, jj;
-    // int en = CACHE_LINE_SIZE * (mat2_cols / CACHE_LINE_SIZE);
-
-    // for (int kk = 0; kk < en; kk += CACHE_LINE_SIZE) {
-    //     for (int jj = 0; jj < en; jj += CACHE_LINE_SIZE) {
-    //         for (int i = 0; i < mat2_cols; i++) {
-    //             for (int j = jj; j < jj + CACHE_LINE_SIZE; j++) {
-    //                 // double sum = C[i][j];
-    //                 // mat->data + (mat1_cols * i) + j
-    //                 double sum = *(result_data + (i * mat2_cols) + j);
-    //                 for (int k = kk; k < kk + CACHE_LINE_SIZE; k++) {
-    //                     // sum += A[i][k] * B[k][j];
-    //                     sum += *(mat1_data + (i * mat2_cols) + k) * *(mat2_T_data + (j * mat2_T_cols) + k);
-    //                 }
-    //                 *(result_data + (i * mat2_rows) + j) = sum;
-    //             }
-    //         }
-    //     }
-    // }
 
     deallocate_matrix(mat2_T);
     return 0;
