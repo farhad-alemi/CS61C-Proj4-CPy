@@ -672,16 +672,16 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
     /* Calculating Transpose */  // todo can i optimize
     for (int index = 0; index < trans_threshold; ++index) {
-        *(mat2_T_data + (mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)) = *(mat2_data + index);
+        mat2_T_data[(mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)] = mat2_data[index];
     }
 
     for (int i = 0; i < result_rows; ++i) {
         for (int j = 0; j < result_cols; ++j) {
             double temp = 0;
             for (int k = 0; k < mat1->cols; ++k) {
-                temp += mat1_data[i * mat1_cols + k] * mat2_T[j * mat2_T_cols + k];
+                temp += mat1_data[i * mat1_cols + k] * mat2_T_data[j * mat2_T_cols + k];
             }
-            result_data[i * result_col + j] = temp;
+            result_data[i * result_cols + j] = temp;
         }
     }
 
