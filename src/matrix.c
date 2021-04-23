@@ -678,12 +678,21 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
 #pragma omp parallel for
     for (int i = 0; i < result_rows; ++i) {
-        for (int j = 0; j < result_cols; ++j) {
-            double temp = 0;
-            for (int k = 0; k < mat1_cols; ++k) {
-                temp += mat1_data[i * mat1_cols + k] * mat2_T_data[j * mat2_T_cols + k];
+        for (int j = 0; j < result_cols; j += 2) {
+            {
+                double temp = 0;
+                for (int k = 0; k < mat1_cols; ++k) {
+                    temp += mat1_data[i * mat1_cols + k] * mat2_T_data[j * mat2_T_cols + k];
+                }
+                result_data[i * result_cols + j] = temp;
             }
-            result_data[i * result_cols + j] = temp;
+            {
+                double temp = 0;
+                for (int k = 0; k < mat1_cols; ++k) {
+                    temp += mat1_data[i * mat1_cols + k] * mat2_T_data[(j + 1) * mat2_T_cols + k];
+                }
+                result_data[i * result_cols + (j + 1)] = temp;
+            }
         }
     }
 
