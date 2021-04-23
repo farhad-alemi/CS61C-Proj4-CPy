@@ -640,7 +640,7 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code, mat1_cols, mat2_cols, result_rows, result_cols;
+    int mat1_cols, mat2_cols, result_rows, result_cols;
     double *mat1_data, *mat2_data, *result_data;
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
