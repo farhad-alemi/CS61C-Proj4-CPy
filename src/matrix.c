@@ -687,7 +687,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 __m256d mat1_data_i_mat1_cols_k6 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 6]);
                 __m256d mat1_data_i_mat1_cols_k7 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 7]);
 
-                for (int j = 0; j < thresh_j; j += 16) {
+                for (int j = 0; j < thresh_j; j += 4) {
                     double *mat2_data_k_mat2_cols_j0 = mat2_data_k_mat2_cols0 + j;
                     double *mat2_data_k_mat2_cols_j1 = mat2_data_k_mat2_cols1 + j;
                     double *mat2_data_k_mat2_cols_j2 = mat2_data_k_mat2_cols2 + j;
