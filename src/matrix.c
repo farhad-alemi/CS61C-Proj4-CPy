@@ -839,7 +839,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         return 0;
     } else {
         /* Repeated Squaring */
-        largest_pow_2 = (log(remaining_power) / log(2));
+        largest_pow_2 = (log(pow) / log(2));
         if (largest_pow_2 == 0 || largest_pow_2 == -1 || largest_pow_2 == DARK_ERROR) {
             return VALUE_ERROR;
         }
