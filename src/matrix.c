@@ -640,9 +640,9 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* YOUR CODE HERE */
-    int err_code, mat1_cols, mat2_rows, mat2_cols, mat2_T_cols, result_rows, result_cols, trans_threshold;
-    double *mat1_data, *mat2_data, *mat2_T_data, *result_data;
-    matrix *mat2_T;
+    int err_code, mat1_cols, mat2_rows, mat2_cols, result_rows, result_cols;
+    double *mat1_data, *mat2_data, *result_data;
+    // matrix *mat2_T;
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
         result->rows != mat1->rows || result->cols != mat2->cols) {
@@ -654,46 +654,95 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* Register Blocking - This reduces the number of accesses to matrix fields. */
     mat1_cols = mat1->cols;
     mat1_data = mat1->data;
-    mat2_rows = mat2->rows;
+    // mat2_rows = mat2->rows;
     mat2_cols = mat2->cols;
     mat2_data = mat2->data;
     result_rows = result->rows;
     result_cols = result->cols;
     result_data = result->data;
-    trans_threshold = mat2_rows * mat2_cols;
+    // trans_threshold = mat2_rows * mat2_cols;
 
-    /* Calculating Transpose of a mat2. */
-    err_code = allocate_matrix(&mat2_T, mat2_cols, mat2_rows);
-    if (err_code) {
-        return err_code;
-    }
-    mat2_T_data = mat2_T->data;
-    mat2_T_cols = mat2_T->cols;
+    //     /* Calculating Transpose of a mat2. */
+    //     err_code = allocate_matrix(&mat2_T, mat2_cols, mat2_rows);
+    //     if (err_code) {
+    //         return err_code;
+    //     }
+    //     mat2_T_data = mat2_T->data;
+    //     mat2_T_cols = mat2_T->cols;
 
-    /* Calculating Transpose */  // todo can i optimize
-#pragma omp parallel for
-    for (int index = 0; index < trans_threshold; ++index) {
-        mat2_T_data[(mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)] = mat2_data[index];
-    }
+    //     /* Calculating Transpose */  // todo can i optimize
+    // #pragma omp parallel for
+    //     for (int index = 0; index < trans_threshold; ++index) {
+    //         mat2_T_data[(mat2_T_cols * (index % mat2_cols)) + (index / mat2_cols)] = mat2_data[index];
+    //     }
 
-#pragma omp parallel for
-    for (int i = 0; i < result_rows; ++i) {
-        double *result_data_i_result_cols = result_data + (i * result_cols);
-
-        for (int j = 0; j < result_cols; ++j) {
-            double temp = 0;
+#pragma omp parallel
+    {
+#pragma omp for
+        for (int i = 0; i < result_rows; ++i) {
+            double *result_data_i_result_cols = result_data + (i * result_cols);
             double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
-            double *mat2_T_data_j_mat2_T_cols = mat2_T_data + (j * mat2_T_cols);
 
             for (int k = 0; k < mat1_cols; ++k) {
-                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
+                double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
+
+                for (int j = 0; j < result_cols; ++j) {
+                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
+                }
             }
-            result_data_i_result_cols[j] = temp;
         }
     }
 
-    deallocate_matrix(mat2_T);
+    // deallocate_matrix(mat2_T);
     return 0;
+
+    /*
+    #pragma omp parallel
+    {
+        __m256d arr[4];
+        double *mat1_data_index, *mat2_data_index, *result_data_index;
+#pragma omp for
+        for (int index = 0; index < threshold; index += STRIDE) {
+            mat1_data_index = mat1_data + index;
+            mat2_data_index = mat2_data + index;
+            result_data_index = result_data + index;
+
+            arr[0] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index)));
+            arr[1] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 4)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 4)));
+            arr[2] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 8)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 8)));
+            arr[3] = _mm256_add_pd(_mm256_loadu_pd((const double *)(mat1_data_index + 12)),
+                                   _mm256_loadu_pd((const double *)(mat2_data_index + 12)));
+
+            _mm256_storeu_pd(result_data_index, arr[0]);
+            _mm256_storeu_pd(result_data_index + 4, arr[1]);
+            _mm256_storeu_pd(result_data_index + 8, arr[2]);
+            _mm256_storeu_pd(result_data_index + 12, arr[3]);
+        }
+
+         temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+                temp += mat1_data_i_mat1_cols[k] * mat2_T_data_j_mat2_T_cols[k];
+    }
+    */
 }
 
 /*
