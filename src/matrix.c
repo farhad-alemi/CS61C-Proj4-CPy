@@ -670,7 +670,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
                 double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
                 // omp_set_num_threads(16);
-                for (int j = 0; j < result_cols; j++) {
+                for (int j = 0; j < result_cols / 2; j++) {
                     result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
                     // result_data_i_result_cols[j + 1] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 1];
                     // result_data_i_result_cols[j + 2] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 2];
@@ -690,6 +690,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                     // result_data_i_result_cols[j + 13] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 13];
                     // result_data_i_result_cols[j + 14] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 14];
                     // result_data_i_result_cols[j + 15] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 15];
+                }
+
+                for (int j = result_cols / 2; j < result_cols; j++) {
+                    result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
                 }
                 /* Tail Case */
                 // for (int j = thresh; j < result_cols; ++j) {
