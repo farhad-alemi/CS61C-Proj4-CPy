@@ -673,7 +673,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                 double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
                 double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
 
-                for (int j = 0; j < thresh; j++) {
+                for (int j = 0; j < result_cols; j++) {
                     result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
                     // result_data_i_result_cols[j + 1] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 1];
                     // result_data_i_result_cols[j + 2] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j + 2];
