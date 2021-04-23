@@ -839,7 +839,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         return 0;
     } else {
         /* Repeated Squaring */
-        largest_pow_2 = (int)log2(pow);
+        largest_pow_2 = (log(remaining_power) / log(2));
         if (largest_pow_2 == 0 || largest_pow_2 == -1 || largest_pow_2 == DARK_ERROR) {
             return VALUE_ERROR;
         }
@@ -856,7 +856,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         }
 
         while (remaining_power > 0) {  // todo slight chance for parallelization
-            curr_power = (int)log2(remaining_power);
+            curr_power = (int)(log(remaining_power) / log(2));
             err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
             if (err_code) {
                 return err_code;
