@@ -734,7 +734,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
                                                                 _mm256_loadu_pd(mat2_data_k_mat2_cols_j0 + 4),
                                                                 _mm256_loadu_pd(result_data_i_result_cols_j + 4)))))))));
 
-                    arr[1] = _mm256_fmadd_pd(
+                    arr[2] = _mm256_fmadd_pd(
                         mat1_data_i_mat1_cols_k7, _mm256_loadu_pd(mat2_data_k_mat2_cols_j7 + 4),
                         _mm256_fmadd_pd(
                             mat1_data_i_mat1_cols_k6, _mm256_loadu_pd(mat2_data_k_mat2_cols_j6 + 8),
