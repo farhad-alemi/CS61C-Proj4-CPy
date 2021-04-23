@@ -675,10 +675,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     for (int x = 0; x < mat2_cols; x += CACHE_LINE_SIZE) {
         for (int y = 0; y < mat2_cols; y += CACHE_LINE_SIZE) {
             for (int i = y; i - y < CACHE_LINE_SIZE && i < mat2_cols; i++) {
-                for (int j = x; j - x < CACHE_LINE_SIZE && j < n; j++) {
+                for (int j = x; j - x < CACHE_LINE_SIZE && j < mat2_cols; j++) {
                     double sum = *(result_data + (i * mat2_cols) + j);
 
-                    for (k = 0; k < n; k++) {
+                    for (int k = x; k - x < mat2_cols && k < mat2_cols; k++) {
                         // C[i + j * n] += A[i + k * n] * B[k + j * n];
                         sum += *(mat1_data + (i * mat2_cols) + k) * *(mat2_T_data + (j * mat2_T_cols) + k);
                     }
