@@ -788,7 +788,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         memset(binary_rep, -1, sizeof(int) * MAX_POWER);
         int temp = pow;
         for (max_pow_needed = 0; temp > 0; ++max_pow_needed, temp /= 2) {
-            binary_rep[i] = temp % 2;
+            binary_rep[max_pow_needed] = temp % 2;
         }
         /* Undo Last Increment */
         --max_pow_needed;
