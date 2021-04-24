@@ -808,23 +808,25 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 
         /* Calculating Powers of 2 Matrices */
         for (int i = 1; i <= max_pow_needed; ++i) {
-            int thresh_k, thresh_j, mat1_cols, mat2_cols, result_rows, result_cols;
-            double *mat1_data, *mat2_data, *result_data;
+            // int err_code, max_pow_needed, result_rows, result_cols;
+            // double *mat_data, *result_data, *temp_matrix_data;
+            int thresh_k, thresh_j, mat1_cols, mat2_cols, res_rows, res_cols;
+            double *mat1_data, *mat2_data, *res_data;
 
             /* Register Blocking - This reduces the number of accesses to matrix fields. */
             mat1_cols = pow_2_matrices[i - 1]->cols;
             mat1_data = pow_2_matrices[i - 1]->data;
             mat2_cols = pow_2_matrices[i - 1]->cols;
             mat2_data = pow_2_matrices[i - 1]->data;
-            result_rows = pow_2_matrices[i]->rows;
-            result_cols = pow_2_matrices[i]->cols;
-            result_data = pow_2_matrices[i]->data;
+            res_rows = pow_2_matrices[i]->rows;
+            res_cols = pow_2_matrices[i]->cols;
+            res_data = pow_2_matrices[i]->data;
             thresh_k = mat1_cols / 8 * 8;
-            thresh_j = result_cols / 4 * 4;
+            thresh_j = res_cols / 4 * 4;
 
 #pragma omp parallel for
-            for (int i = 0; i < result_rows; ++i) {
-                double *result_data_i_result_cols = result_data + (i * result_cols);
+            for (int i = 0; i < res_rows; ++i) {
+                double *result_data_i_result_cols = res_data + (i * res_cols);
                 double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
 
                 for (int k = 0; k < thresh_k; k += 8) {
@@ -880,7 +882,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
                     }
 
                     /* Tail Case for j */
-                    for (int j = thresh_j; j < result_cols; ++j) {
+                    for (int j = thresh_j; j < res_cols; ++j) {
                         result_data_i_result_cols[j] += mat1_data_i_mat1_cols[k] * mat2_data_k_mat2_cols0[j] +
                                                         mat1_data_i_mat1_cols[k + 1] * mat2_data_k_mat2_cols1[j] +
                                                         mat1_data_i_mat1_cols[k + 2] * mat2_data_k_mat2_cols2[j] +
@@ -897,7 +899,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
                     double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
                     double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
 
-                    for (int j = 0; j < result_cols; j++) {
+                    for (int j = 0; j < res_cols; j++) {
                         result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
                     }
                 }
