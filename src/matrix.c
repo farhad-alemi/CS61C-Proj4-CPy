@@ -752,7 +752,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* YOUR CODE HERE */
-    int err_code, max_pow_needed, mat_rows, mat_cols, result_rows, result_cols;
+    int err_code, max_pow_needed, result_rows, result_cols;
     double *mat_data, *result_data, *temp_matrix_data;
     matrix **pow_2_matrices, *temp_matrix = NULL;
 
@@ -764,8 +764,6 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     }
 
     /* Register Blocking */
-    mat_rows = mat->rows;
-    mat_cols = mat->cols;
     mat_data = mat->data;
     result_rows = result->rows;
     result_cols = result->cols;
@@ -802,7 +800,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         /* Allocating Matrices */
         pow_2_matrices[0] = mat;
         for (int i = 1; i <= max_pow_needed; ++i) {
-            err_code = allocate_matrix(pow_2_matrices + i, mat_rows, mat_cols);
+            err_code = allocate_matrix(pow_2_matrices + i, result_rows, result_cols);
             if (err_code) {
                 return err_code;
             }
@@ -818,7 +816,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 
         memcpy(result_data, pow_2_matrices[max_pow_needed]->data, sizeof(double) * result_rows * result_cols);
         if (pow - (1U << (size_t)max_pow_needed) > 0) {
-            err_code = allocate_matrix(&temp_matrix, mat_rows, mat_cols);
+            err_code = allocate_matrix(&temp_matrix, result_rows, result_cols);
             if (err_code) {
                 return err_code;
             }
@@ -827,6 +825,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 
         for (int i = max_pow_needed - 1; i >= 0; --i) {  // todo slight chance for parallelization
             if (binary_rep[i] == 1) {
+                memset(temp_matrix_data, 0, sizeof(double) * result_rows * result_col);
                 err_code = mul_matrix(temp_matrix, result, pow_2_matrices[i]);
                 if (err_code) {
                     return err_code;
