@@ -5,6 +5,7 @@
 #define VALUE_ERROR -1
 #define STRIDE 16
 #define DIMENSION_THRESHOLD 128
+#define MAX_POWER 11
 
 typedef struct matrix {
     int rows;              /* number of rows */

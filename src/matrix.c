@@ -744,72 +744,6 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     return 0;
 }
 
-// /*
-//  * Returns the largest power of two that is smaller than POW.
-//  */
-// int calculate_largest_pow2(int number) {
-//     if (number < 1) {
-//         return DARK_ERROR;
-//     }
-
-//     for (int pow_2 = 1; pow_2 < 8 * sizeof(unsigned int); ++pow_2) {
-//         if ((1U << (unsigned int)pow_2) > number) {
-//             return pow_2 - 1;
-//         }
-//     }
-//     return -1;
-// }
-
-/*
- * Calculates all powers of 2 matrices upto LARGEST_POW.
- */
-int calculate_pow2_matrices(matrix *mat, matrix ***pow_2_matrices, int largest_pow) {
-    int err_code;
-
-    if (largest_pow < 1) {
-        return VALUE_ERROR;
-    }
-
-    *pow_2_matrices = (matrix **)malloc(sizeof(matrix **) * (largest_pow + 1));
-    if (pow_2_matrices == NULL) {
-        return RUNTIME_ERROR;
-    }
-
-    (*pow_2_matrices)[0] = mat;
-
-    for (int i = 1; i <= largest_pow; ++i) {
-        err_code = allocate_matrix((*pow_2_matrices + i), mat->rows, mat->cols);
-        if (err_code) {
-            return err_code;
-        }
-    }
-
-    for (int i = 1; i <= largest_pow; ++i) {
-        err_code = mul_matrix(*(*pow_2_matrices + i), *(*pow_2_matrices + i - 1), *(*pow_2_matrices + i - 1));
-        if (err_code) {
-            return err_code;
-        }
-    }
-    return 0;
-}
-
-/*
- * Frees the power of 2 matrices and the array.
- */
-int deallocate_pow2_matrices(matrix **matrices, int len) {
-    if (matrices == NULL) {
-        return DARK_ERROR;
-    }
-
-    for (int i = 1; i < len; ++i) {
-        deallocate_matrix(matrices[i]);
-    }
-
-    free(matrices);
-
-    return 0;
-}
-
 /*
  * Store the result of raising mat to the (pow)th power to `result`.
  * Return 0 upon success and a nonzero value upon failure.
@@ -818,9 +752,8 @@ int deallocate_pow2_matrices(matrix **matrices, int len) {
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* YOUR CODE HERE */
-    // replacing function calls like fill_matrix with memcpy and memset
-
-    int err_code, largest_pow_2, remaining_power, curr_power;
+    int err_code, max_pow_needed, mat_rows, mat_cols, result_rows, result_cols;
+    double *mat_data, *result_data, *temp_matrix_data;
     matrix **pow_2_matrices, *temp_matrix = NULL;
 
     if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
@@ -830,44 +763,85 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         return VALUE_ERROR;
     }
 
+    /* Register Blocking */
+    mat_rows = mat->rows;
+    mat_cols = mat->cols;
+    mat_data = mat->data;
+    result_rows = result->rows;
+    result_cols = result->cols;
+    result_data = result->data;
+
     if (pow == 0) {
-        return mat_operator(result, mat, mat, 'I');
-        // set all to zero then 00,11,22,33,44
-        //
+        memset(result_data, 0, sizeof(double) * result_rows * result_cols);
+        for (int rc = 0; rc < result_rows; ++rc) {
+            result_data[rc * result_cols + rc] = 1;
+        }
+        return 0;
     } else if (pow == 1) {
-        memcpy(result->data, mat->data, sizeof(double) * result->rows * result->cols);
+        memcpy(result_data, mat_data, sizeof(double) * result_rows * result_cols);
         return 0;
     } else {
-        /* Repeated Squaring */
-        largest_pow_2 = (log(pow) / log(2));
-        if (largest_pow_2 == 0 || largest_pow_2 == -1 || largest_pow_2 == DARK_ERROR) {
-            return VALUE_ERROR;
+        /* ---Repeated Squaring--- */
+
+        /* Binary Rep */
+        int binary_rep[MAX_POWER];
+        memset(binary_rep, -1, sizeof(int) * MAX_POWER);
+        int temp = pow;
+        for (max_pow_needed = 0; temp > 0; ++max_pow_needed, temp /= 2) {
+            binary_rep[i] = temp % 2;
+        }
+        /* Undo Last Increment */
+        --max_pow_needed;
+
+        /* Calcuating Powers of 2 Matrices */
+        pow_2_matrices = (matrix **)malloc(sizeof(matrix *) * (max_pow_needed + 1));
+        if (pow_2_matrices == NULL) {
+            return RUNTIME_ERROR;
         }
 
-        err_code = calculate_pow2_matrices(mat, &pow_2_matrices, largest_pow_2);
-        if (err_code) {
-            return err_code;
-        }
-
-        memcpy(result->data, pow_2_matrices[largest_pow_2]->data, sizeof(double) * result->rows * result->cols);
-        remaining_power = pow - (1U << (size_t)largest_pow_2);
-        if (remaining_power > 0) {
-            allocate_matrix(&temp_matrix, mat->rows, mat->cols);
-        }
-
-        while (remaining_power > 0) {  // todo slight chance for parallelization
-            curr_power = (int)(log(remaining_power) / log(2));
-            err_code = mul_matrix(temp_matrix, result, pow_2_matrices[curr_power]);
+        /* Allocating Matrices */
+        pow_2_matrices[0] = mat;
+        for (int i = 1; i <= max_pow_needed; ++i) {
+            err_code = allocate_matrix(pow_2_matrices + i, mat_rows, mat_cols);
             if (err_code) {
                 return err_code;
             }
+        }
 
-            memcpy(result->data, temp_matrix->data, sizeof(double) * result->rows * result->cols);
-            remaining_power -= (1U << (size_t)curr_power);
+        /* Calculating Powers of 2 Matrices */
+        for (int i = 1; i <= max_pow_needed; ++i) {
+            err_code = mul_matrix(pow_2_matrices[i], pow_2_matrices[i - 1], pow_2_matrices[i - 1]);
+            if (err_code) {
+                return err_code;
+            }
+        }
+
+        memcpy(result_data, pow_2_matrices[max_pow_needed]->data, sizeof(double) * result_rows * result_cols);
+        if (pow - (1U << (size_t)max_pow_needed) > 0) {
+            err_code = allocate_matrix(&temp_matrix, mat_rows, mat_cols);
+            if (err_code) {
+                return err_code;
+            }
+            temp_matrix_data = temp_matrix->data;
+        }
+
+        for (int i = max_pow_needed - 1; i > 0; --i) {  // todo slight chance for parallelization
+            if (binary_rep[i] == 1) {
+                err_code = mul_matrix(temp_matrix, result, pow_2_matrices[i]);
+                if (err_code) {
+                    return err_code;
+                }
+                memcpy(result_data, temp_matrix_data, sizeof(double) * result_rows * result_cols);
+            }
         }
 
         deallocate_matrix(temp_matrix);
-        deallocate_pow2_matrices(pow_2_matrices, largest_pow_2 + 1);
+
+        /* Deallocating Powers of 2 Matrices */
+        for (int i = 1; i <= max_pow_needed; ++i) {
+            deallocate_matrix(pow_2_matrices[i]);
+        }
+        free(pow_2_matrices);
     }
 
     return 0;
