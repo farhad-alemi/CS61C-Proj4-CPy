@@ -1,11 +1,11 @@
 /* THIS PROGRAM SACRIFICES MANY ABSTRACTION LEVELS FOR THE SAKE OF HIGHER PERFORMANCE!!! */
 
-#include "matrix.h"
-
 #include <omp.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "matrix.h"
 
 /* Include SSE intrinsics */
 #if defined(_MSC_VER)
@@ -808,104 +808,10 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 
         /* Calculating Powers of 2 Matrices */
         for (int i = 1; i <= max_pow_needed; ++i) {
-            int thresh_k, thresh_j, mat1_cols, mat2_cols, result_rows, result_cols;
-            double *mat1_data, *mat2_data, *result_data;
-
-            /* Register Blocking - This reduces the number of accesses to matrix fields. */
-            mat1_cols = pow_2_matrices[i - 1]->cols;
-            mat1_data = pow_2_matrices[i - 1]->data;
-            mat2_cols = pow_2_matrices[i - 1]->cols;
-            mat2_data = pow_2_matrices[i - 1]->data;
-            result_rows = pow_2_matrices[i]->rows;
-            result_cols = pow_2_matrices[i]->cols;
-            result_data = pow_2_matrices[i]->data;
-            thresh_k = mat1_cols / 8 * 8;
-            thresh_j = result_cols / 4 * 4;
-
-#pragma omp parallel for
-            for (int i = 0; i < result_rows; ++i) {
-                double *result_data_i_result_cols = result_data + (i * result_cols);
-                double *mat1_data_i_mat1_cols = mat1_data + (i * mat1_cols);
-
-                for (int k = 0; k < thresh_k; k += 8) {
-                    double *mat2_data_k_mat2_cols0 = mat2_data + (k * mat2_cols);
-                    double *mat2_data_k_mat2_cols1 = mat2_data + ((k + 1) * mat2_cols);
-                    double *mat2_data_k_mat2_cols2 = mat2_data + ((k + 2) * mat2_cols);
-                    double *mat2_data_k_mat2_cols3 = mat2_data + ((k + 3) * mat2_cols);
-                    double *mat2_data_k_mat2_cols4 = mat2_data + ((k + 4) * mat2_cols);
-                    double *mat2_data_k_mat2_cols5 = mat2_data + ((k + 5) * mat2_cols);
-                    double *mat2_data_k_mat2_cols6 = mat2_data + ((k + 6) * mat2_cols);
-                    double *mat2_data_k_mat2_cols7 = mat2_data + ((k + 7) * mat2_cols);
-
-                    __m256d mat1_data_i_mat1_cols_k0 = _mm256_set1_pd(mat1_data_i_mat1_cols[k]);
-                    __m256d mat1_data_i_mat1_cols_k1 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 1]);
-                    __m256d mat1_data_i_mat1_cols_k2 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 2]);
-                    __m256d mat1_data_i_mat1_cols_k3 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 3]);
-                    __m256d mat1_data_i_mat1_cols_k4 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 4]);
-                    __m256d mat1_data_i_mat1_cols_k5 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 5]);
-                    __m256d mat1_data_i_mat1_cols_k6 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 6]);
-                    __m256d mat1_data_i_mat1_cols_k7 = _mm256_set1_pd(mat1_data_i_mat1_cols[k + 7]);
-
-                    for (int j = 0; j < thresh_j; j += 4) {
-                        double *mat2_data_k_mat2_cols_j0 = mat2_data_k_mat2_cols0 + j;
-                        double *mat2_data_k_mat2_cols_j1 = mat2_data_k_mat2_cols1 + j;
-                        double *mat2_data_k_mat2_cols_j2 = mat2_data_k_mat2_cols2 + j;
-                        double *mat2_data_k_mat2_cols_j3 = mat2_data_k_mat2_cols3 + j;
-                        double *mat2_data_k_mat2_cols_j4 = mat2_data_k_mat2_cols4 + j;
-                        double *mat2_data_k_mat2_cols_j5 = mat2_data_k_mat2_cols5 + j;
-                        double *mat2_data_k_mat2_cols_j6 = mat2_data_k_mat2_cols6 + j;
-                        double *mat2_data_k_mat2_cols_j7 = mat2_data_k_mat2_cols7 + j;
-
-                        double *result_data_i_result_cols_j = result_data_i_result_cols + j;
-
-                        _mm256_storeu_pd(
-                            result_data_i_result_cols_j,
-                            _mm256_fmadd_pd(
-                                mat1_data_i_mat1_cols_k7, _mm256_loadu_pd(mat2_data_k_mat2_cols_j7),
-                                _mm256_fmadd_pd(
-                                    mat1_data_i_mat1_cols_k6, _mm256_loadu_pd(mat2_data_k_mat2_cols_j6),
-                                    _mm256_fmadd_pd(
-                                        mat1_data_i_mat1_cols_k5, _mm256_loadu_pd(mat2_data_k_mat2_cols_j5),
-                                        _mm256_fmadd_pd(
-                                            mat1_data_i_mat1_cols_k4, _mm256_loadu_pd(mat2_data_k_mat2_cols_j4),
-                                            _mm256_fmadd_pd(
-                                                mat1_data_i_mat1_cols_k3, _mm256_loadu_pd(mat2_data_k_mat2_cols_j3),
-                                                _mm256_fmadd_pd(
-                                                    mat1_data_i_mat1_cols_k2, _mm256_loadu_pd(mat2_data_k_mat2_cols_j2),
-                                                    _mm256_fmadd_pd(
-                                                        mat1_data_i_mat1_cols_k1, _mm256_loadu_pd(mat2_data_k_mat2_cols_j1),
-                                                        _mm256_fmadd_pd(mat1_data_i_mat1_cols_k0,
-                                                                        _mm256_loadu_pd(mat2_data_k_mat2_cols_j0),
-                                                                        _mm256_loadu_pd(result_data_i_result_cols_j))))))))));
-                    }
-
-                    /* Tail Case for j */
-                    for (int j = thresh_j; j < result_cols; ++j) {
-                        result_data_i_result_cols[j] += mat1_data_i_mat1_cols[k] * mat2_data_k_mat2_cols0[j] +
-                                                        mat1_data_i_mat1_cols[k + 1] * mat2_data_k_mat2_cols1[j] +
-                                                        mat1_data_i_mat1_cols[k + 2] * mat2_data_k_mat2_cols2[j] +
-                                                        mat1_data_i_mat1_cols[k + 3] * mat2_data_k_mat2_cols3[j] +
-                                                        mat1_data_i_mat1_cols[k + 4] * mat2_data_k_mat2_cols4[j] +
-                                                        mat1_data_i_mat1_cols[k + 5] * mat2_data_k_mat2_cols5[j] +
-                                                        mat1_data_i_mat1_cols[k + 6] * mat2_data_k_mat2_cols6[j] +
-                                                        mat1_data_i_mat1_cols[k + 7] * mat2_data_k_mat2_cols7[j];
-                    }
-                }
-
-                /* Tail Case for k */
-                for (int k = thresh_k; k < mat1_cols; k++) {
-                    double mat1_data_i_mat1_cols_k = mat1_data_i_mat1_cols[k];
-                    double *mat2_data_k_mat2_cols = mat2_data + (k * mat2_cols);
-
-                    for (int j = 0; j < result_cols; j++) {
-                        result_data_i_result_cols[j] += mat1_data_i_mat1_cols_k * mat2_data_k_mat2_cols[j];
-                    }
-                }
+            err_code = mul_matrix(pow_2_matrices[i], pow_2_matrices[i - 1], pow_2_matrices[i - 1]);
+            if (err_code) {
+                return err_code;
             }
-            // err_code = mul_matrix(pow_2_matrices[i], pow_2_matrices[i - 1], pow_2_matrices[i - 1]);
-            // if (err_code) {
-            //     return err_code;
-            // }
         }
 
         memcpy(result_data, pow_2_matrices[max_pow_needed]->data, sizeof(double) * result_rows * result_cols);
