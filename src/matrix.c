@@ -772,6 +772,8 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     result_rows = result->rows;
     result_cols = result->cols;
     result_data = result->data;
+    temp_matrix_rows = -1;
+    temp_matrix_cols = -1;
 
     if (pow == 0) {
         memset(result_data, 0, sizeof(double) * result_rows * result_cols);
