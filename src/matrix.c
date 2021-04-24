@@ -825,7 +825,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             temp_matrix_data = temp_matrix->data;
         }
 
-        for (int i = max_pow_needed - 1; i > 0; --i) {  // todo slight chance for parallelization
+        for (int i = max_pow_needed - 1; i >= 0; --i) {  // todo slight chance for parallelization
             if (binary_rep[i] == 1) {
                 err_code = mul_matrix(temp_matrix, result, pow_2_matrices[i]);
                 if (err_code) {
