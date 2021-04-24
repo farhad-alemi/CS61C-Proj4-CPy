@@ -235,17 +235,17 @@ class TestPow(TestCase):
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
-    def test_small_pow7odd(self):
+    def test_small_pow3odd(self):
         # YOUR CODE HERE
         dp_mat, nc_mat = rand_dp_nc_matrix(3, 3, seed=0)
-        is_correct, speed_up = compute([dp_mat, 7], [nc_mat, 7], "pow")
+        is_correct, speed_up = compute([dp_mat, 3], [nc_mat, 3], "pow")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
-    def test_small_pow7even(self):
+    def test_small_pow3even(self):
         # YOUR CODE HERE
         dp_mat, nc_mat = rand_dp_nc_matrix(4, 4, seed=0)
-        is_correct, speed_up = compute([dp_mat, 7], [nc_mat, 7], "pow")
+        is_correct, speed_up = compute([dp_mat, 3], [nc_mat, 3], "pow")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
