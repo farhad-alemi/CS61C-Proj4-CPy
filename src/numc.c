@@ -165,12 +165,6 @@ static int Matrix61c_init(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *arg2 = NULL;
     PyObject *arg3 = NULL;
     if (PyArg_UnpackTuple(args, "args", 1, 3, &arg1, &arg2, &arg3)) {
-        /* args validation */
-        if (arg1 && arg2 && PyLong_Check(arg1) && PyLong_Check(arg2) && (PyLong_AsLong(arg1) <= 0 || PyLong_AsLong(arg2) <= 0)) {
-            PyErr_SetString(PyExc_ValueError, "Invalid arguments");
-            return -1;
-        }
-
         /* arguments are (rows, cols, val) */
         if (arg1 && arg2 && arg3 && PyLong_Check(arg1) && PyLong_Check(arg2) && (PyLong_Check(arg3) || PyFloat_Check(arg3))) {
             if (PyLong_Check(arg3)) {

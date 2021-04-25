@@ -50,17 +50,21 @@ void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
  not a slice. */
 int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, int col_offset, int isSlice) {
     if (cols <= 0 || rows <= 0) {
+        PyErr_SetString(PyExc_ValueError, "Row or Column <= Zero");
         return VALUE_ERROR;
     } else if (isSlice) {
         if (from == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "Row or Column <= Zero");
             return RUNTIME_ERROR;
         } else if (row_offset < 0 || col_offset < 0 || row_offset + rows > from->rows || col_offset + cols > from->cols) {
+            PyErr_SetString(PyExc_ValueError, "Invalid Offset");
             return VALUE_ERROR;
         }
     }
 
     *mat = (matrix *)malloc(sizeof(matrix));
     if (*mat == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Malloc Failed");
         return RUNTIME_ERROR;
     }
 
@@ -71,11 +75,13 @@ int allocator(matrix **mat, int rows, int cols, matrix *from, int row_offset, in
         (*mat)->_is_special = 0;
         (*mat)->data = (double *)calloc(rows * cols, sizeof(double));
         if ((*mat)->data == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "Calloc Failed");
             return RUNTIME_ERROR;
         }
 
         (*mat)->ref_cnt = (int *)malloc(sizeof(int));
         if ((*mat)->ref_cnt == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "Malloc Failed");
             return RUNTIME_ERROR;
         }
 
@@ -120,13 +126,16 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
 int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int cols) {
     /* YOUR CODE HERE */
     if (cols <= 0 || rows <= 0 || offset < 0) {
+        PyErr_SetString(PyExc_ValueError, "Row or Column <= Zero || Offset < 0");
         return VALUE_ERROR;
     } else if (from == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "From is Null");
         return RUNTIME_ERROR;
     }
 
     *mat = (matrix *)malloc(sizeof(matrix));
     if (*mat == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Malloc Failed");
         return RUNTIME_ERROR;
     }
 
@@ -153,6 +162,7 @@ void deallocate_matrix(matrix *mat) {
     if (mat == NULL) {
         return;
     } else if (mat->data == NULL || mat->ref_cnt == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Deallocating Null");
         exit(RUNTIME_ERROR);
     }
 
@@ -181,8 +191,10 @@ double *get_addr(matrix *mat, int row, int col) {
     int stride;
 
     if (mat == NULL || mat->data == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Retrieval from NUll");
         return (double *)RUNTIME_ERROR;
     } else if (row < 0 || row >= mat->rows || col < 0 || col >= mat->cols) {
+        PyErr_SetString(PyExc_ValueError, "Retrieval from Invalid Location");
         return (double *)VALUE_ERROR;
     }
 
@@ -238,8 +250,10 @@ void fill_matrix(matrix *mat, double val) {
 int validate(matrix *result, matrix *mat1, matrix *mat2) {
     if (result == NULL || mat1 == NULL || mat2 == NULL || result->data == NULL || mat1->data == NULL || mat2->data == NULL ||
         mat1->rows != result->rows || mat1->cols != result->cols) {
+        PyErr_SetString(PyExc_RuntimeError, "Runtime Error while Validation");
         return RUNTIME_ERROR;
     } else if (mat1->rows != mat2->rows || mat1->cols != mat2->cols) {
+        PyErr_SetString(PyExc_ValueError, "Value Error");
         return VALUE_ERROR;
     }
 
@@ -420,6 +434,7 @@ int mat_operator(matrix *result, matrix *mat1, matrix *mat2, char operation) {
                 *(result_data_index) = ((index / mat1->cols) == (index % mat1->cols)) ? 1 : 0;
                 break;
             default:
+                PyErr_SetString(PyExc_RuntimeError, "Invalid Operation");
                 return RUNTIME_ERROR;
                 break;
         }
@@ -645,8 +660,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 
     if (result == NULL || result->data == NULL || mat1 == NULL || mat1->data == NULL || mat2 == NULL || mat2->data == NULL ||
         result->rows != mat1->rows || result->cols != mat2->cols) {
+        PyErr_SetString(PyExc_RuntimeError, "Multiplication Using Null Data");
         return RUNTIME_ERROR;
     } else if (mat1->cols != mat2->rows) {
+        PyErr_SetString(PyExc_ValueError, "Dimensions Mismatch");
         return VALUE_ERROR;
     }
 
@@ -758,8 +775,10 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 
     if (result == NULL || mat == NULL || result->data == NULL || mat->data == NULL || mat->rows != result->rows ||
         mat->cols != result->cols) {
+        PyErr_SetString(PyExc_RuntimeError, "Pow with NULL Data");
         return RUNTIME_ERROR;
     } else if (pow < 0 || mat->rows != mat->cols) {
+        PyErr_SetString(PyExc_ValueError, "ValueError in Pow");
         return VALUE_ERROR;
     }
 
@@ -794,6 +813,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         /* Calcuating Powers of 2 Matrices */
         pow_2_matrices = (matrix **)malloc(sizeof(matrix *) * (max_pow_needed + 1));
         if (pow_2_matrices == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "Pow_2_Matrices Malloc Failed");
             return RUNTIME_ERROR;
         }
 
