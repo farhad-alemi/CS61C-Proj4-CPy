@@ -159,7 +159,7 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int co
  */
 void deallocate_matrix(matrix *mat) {
     /* YOUR CODE HERE */
-    /*if (mat == NULL) {
+    if (mat == NULL) {
         return;
     } else if (mat->data == NULL || mat->ref_cnt == NULL) {
         PyErr_SetString(PyExc_RuntimeError, "Deallocating Null");
@@ -181,7 +181,7 @@ void deallocate_matrix(matrix *mat) {
         if (mat->parent != NULL) {
             free(mat);
         }
-    }*/
+    }
 }
 
 /*
